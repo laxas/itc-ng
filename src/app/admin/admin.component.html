@@ -1,0 +1,27 @@
+<div class="page-body">
+  <div class="adminbackground">
+
+    <p class="communication-error-message" *ngIf="isCommunicationProblem">{{ communicationProblemMessage }}</p>
+    <p>{{ selectedWorkspace }}</p>
+
+    <mat-form-field *ngIf="!isCommunicationProblem" style="width:300px;">
+      <mat-select placeholder="Arbeitsbereich" [formControl]="wsSelector">
+        <mat-option *ngFor="let ws of myWorkspaces" [value]="ws.id">
+            {{ws.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <nav mat-tab-nav-bar *ngIf="!isCommunicationProblem">
+      <a mat-tab-link
+          *ngFor="let link of navLinks"
+          [routerLink]="link.path"
+          routerLinkActive #rla="routerLinkActive"
+          [active]="rla.isActive">
+        {{link.label}}
+      </a>
+    </nav>
+
+    <router-outlet></router-outlet>
+  </div>
+</div>

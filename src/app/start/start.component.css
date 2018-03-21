@@ -1,0 +1,23 @@
+div.codeinput, div.testselect {
+  margin: 40px;
+}
+
+div.buttongroup {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+form {
+  margin: 40px;
+  min-width: 150px;
+  max-width: 500px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+button.testselectbutton {
+  margin: 10px;
+}
