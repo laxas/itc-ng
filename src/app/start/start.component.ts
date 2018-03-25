@@ -61,6 +61,9 @@ export class StartComponent implements OnInit {
         } else {
           this.setTestselectButtons();
         }
+      }, (errormsg: string) => {
+        this.isError = true;
+        this.select_message = errormsg;
       }
     );
   }

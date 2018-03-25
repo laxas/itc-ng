@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'itc-loading',
+  selector: 'tc-loading',
   templateUrl: './loading.component.html',
   styleUrls: ['./loading.component.css']
 })
