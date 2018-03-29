@@ -43,6 +43,18 @@ export class BackendService {
         );
   }
 
+  getUnitResource(sessiontoken: string, resId: string): Observable<string> {
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/json'
+      })
+    };
+    return this.http
+      .post<GetXmlResponseData>(this.serverUrl + 'getUnitResource.php', {st: sessiontoken, r: resId}, httpOptions)
+        .pipe(
+          catchError(this.handleError)
+        );
+  }
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   private handleError(errorObj: HttpErrorResponse) {

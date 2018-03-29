@@ -9,6 +9,18 @@
     </p>
     <p>cool - oder?</p>
     <p>jah!</p>
+    <button (click)="so()">so</button>
+
+    <template id="iFrameTemplate">
+      <iframe
+        sandbox="allow-scripts allow-same-origin"
+        (srcdoc)='itemPlaygroundDoc'
+        (load)="aler('d')">
+      </iframe>
+    </template>
+    <div id="iFrameHost">
+
+    </div>
   </div>
 </div>
 
