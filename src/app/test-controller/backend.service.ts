@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { ResponseContentType } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
 import { catchError } from 'rxjs/operators';
@@ -43,17 +44,27 @@ export class BackendService {
         );
   }
 
+  // 888888888888888888888888888888888888888888888888888888888888888888
   getUnitResource(sessiontoken: string, resId: string): Observable<string> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
-      })
+      }),
+      responseType: ResponseContentType.ArrayBuffer
     };
     return this.http
-      .post<GetXmlResponseData>(this.serverUrl + 'getUnitResource.php', {st: sessiontoken, r: resId}, httpOptions)
+      .post<Response>(this.serverUrl + 'getUnitResource.php', {st: sessiontoken, r: resId}, httpOptions)
         .pipe(
           catchError(this.handleError)
-        );
+        )
+        .map((r: ArrayBuffer) => {
+            let str64 = '';
+            const alen = r.byteLength;
+            for (let i = 0; i < alen; i++) {
+              str64 += String.fromCharCode(r[i]);
+            }
+            return window.btoa(str64);
+        });
   }
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
