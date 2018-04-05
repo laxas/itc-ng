@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 
 import { TestControllerRoutingModule } from './test-controller-routing.module';
 import { LoadingComponent } from './loading/loading.component';
-import { FrameComponent } from './frame/frame.component';
+import { UnithostComponent } from './unithost/unithost.component';
 import { MatProgressSpinnerModule } from '@angular/material';
 
 
@@ -17,14 +17,14 @@ import { MatProgressSpinnerModule } from '@angular/material';
   ],
   declarations: [
     LoadingComponent,
-    FrameComponent
+    UnithostComponent
   ],
   providers: [
     TestdataService,
     BackendService
   ],
   exports: [
-    FrameComponent
+    UnithostComponent
   ]
 })
 export class TestControllerModule { }

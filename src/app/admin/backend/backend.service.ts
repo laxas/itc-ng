@@ -10,7 +10,7 @@ import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class BackendService {
-  private serverUrl = 'http://ocba2.iqb.hu-berlin.de/';
+  private serverUrl = 'http://ocba.iqb.hu-berlin.de/';
 
   constructor(private http: HttpClient) { }
 

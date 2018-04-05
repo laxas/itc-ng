@@ -1,4 +1,4 @@
-import { FrameComponent } from './test-controller';
+import { UnithostComponent } from './test-controller';
 import { StartComponent } from './start/start.component';
 import { HomeComponent } from './home/home.component';
 import { NgModule } from '@angular/core';
@@ -11,7 +11,7 @@ const routes: Routes = [
   {path: 'home', component: HomeComponent},
   {path: 'start', component: StartComponent},
   {path: 'admin', component: AdminComponent},
-  {path: 't', component: FrameComponent}
+  {path: 't', component: UnithostComponent}
 ];
 
 @NgModule({

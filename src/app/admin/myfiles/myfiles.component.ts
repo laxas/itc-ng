@@ -21,7 +21,7 @@ import { IqbFileUploadQueueComponent, IqbFileUploadInputForDirective } from './.
 export class MyfilesComponent implements OnInit {
   public serverfiles: MatTableDataSource<GetFileResponseData>;
   public displayedColumns = ['checked', 'filename', 'typelabel', 'filesize', 'filedatetime'];
-  public uploadUrl = 'http://ocba2.iqb.hu-berlin.de/uploadFile.php';
+  public uploadUrl = 'http://ocba.iqb.hu-berlin.de/uploadFile.php';
   public fileNameAlias = 'fileforopencba';
   public dataLoading = false;
 

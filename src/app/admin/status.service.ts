@@ -61,7 +61,7 @@ export class StatusService {
 
 
   public isLoggedIn(): boolean {
-    return this._myLoginName.length > 0;
+    return this._adminToken.length > 0;
   }
 
   set myLoginName(loginname: string) {

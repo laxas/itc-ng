@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { ResponseContentType } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
@@ -12,7 +12,7 @@ import 'rxjs/add/observable/throw';
 @Injectable()
 export class BackendService {
 
-  private serverUrl = 'http://ocba2.iqb.hu-berlin.de/';
+  private serverUrl = 'http://ocba.iqb.hu-berlin.de/';
 
   constructor(private http: HttpClient) { }
 
@@ -46,14 +46,15 @@ export class BackendService {
 
   // 888888888888888888888888888888888888888888888888888888888888888888
   getUnitResource(sessiontoken: string, resId: string): Observable<string> {
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type':  'application/json'
-      }),
-      responseType: ResponseContentType.ArrayBuffer
-    };
-    return this.http
-      .post<Response>(this.serverUrl + 'getUnitResource.php', {st: sessiontoken, r: resId}, httpOptions)
+    const myHttpOptions = {
+          headers: new HttpHeaders({
+            'Content-Type':  'application/json'
+          }),
+          responseType: 'arraybuffer' as 'json'
+      };
+
+      return this.http
+      .post<Response>(this.serverUrl + 'getUnitResource.php', {st: sessiontoken, r: resId}, myHttpOptions)
         .pipe(
           catchError(this.handleError)
         )
@@ -66,6 +67,38 @@ export class BackendService {
             return window.btoa(str64);
         });
   }
+  // 888888888888888888888888888888888888888888888888888888888888888888
+  getUnitResource64(sessiontoken: string, resId: string): Observable<string> {
+    const myHttpOptions = {
+          headers: new HttpHeaders({
+            'Content-Type':  'application/json'
+          }),
+          responseType: 'text' as 'json'
+      };
+
+      return this.http
+      .post<Response>(this.serverUrl + 'getUnitResource64.php', {st: sessiontoken, r: resId}, myHttpOptions)
+        .pipe(
+          catchError(this.handleError)
+        );
+  }
+
+  // 888888888888888888888888888888888888888888888888888888888888888888
+  getUnitResourceTxt(sessiontoken: string, resId: string): Observable<string> {
+    const myHttpOptions = {
+          headers: new HttpHeaders({
+            'Content-Type':  'application/json'
+          }),
+          responseType: 'text' as 'json'
+      };
+
+      return this.http
+      .post<Response>(this.serverUrl + 'getUnitResourceTxt.php', {st: sessiontoken, r: resId}, myHttpOptions)
+        .pipe(
+          catchError(this.handleError)
+        );
+  }
+
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   private handleError(errorObj: HttpErrorResponse) {

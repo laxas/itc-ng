@@ -94,7 +94,7 @@ export class TestdataService {
             }
 
             // set current situation
-            this.unitPointer = 3;
+            this.unitPointer = 1;
 
             // triggers ItemplayerComponent to reload
             this.setCurrentUnit(this.unitPointer);
@@ -148,6 +148,19 @@ export class UnitDef {
     this.resources = [];
     this.restorePoint = '';
     this.dataForItemplayer = '';
+  }
+
+  getItemplayerHtml() {
+    console.log(this.resources.length + '<<');
+    for (let i = 0; i < this.resources.length; i++) {
+      console.log('>>' + this.resources[i].type);
+      if (this.resources[i].type === 'itemplayer_html') {
+        if (this.resources[i].dataString.length > 0) {
+          return this.resources[i].dataString;
+        }
+      }
+    }
+    return null;
   }
 }
 
