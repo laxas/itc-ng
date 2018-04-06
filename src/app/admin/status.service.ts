@@ -31,6 +31,7 @@ export class StatusService {
   ) {
     this._myWorkspaces = [];
     this.lastloginname = '';
+    this._myWorkspaceId = 0;
   }
 
 
@@ -77,17 +78,24 @@ export class StatusService {
   // set myWorkspaceName(workspace: string) NO -> set by myWorkspaceId
 
   get myWorkspaceId(): number {
+    if (this._myWorkspaceId === 0) {
+      const wsIdStr = localStorage.getItem('ws');
+      if (wsIdStr.length > 0) {
+        this._myWorkspaceId = +wsIdStr;
+      }
+    }
     return this._myWorkspaceId;
   }
   set myWorkspaceId(workspace: number) {
     if (workspace !== this._myWorkspaceId) {
       this._myWorkspaceId = workspace;
+      localStorage.setItem('ws', String(workspace));
       if (workspace === 0) {
         this._myWorkspaceName = '';
       } else {
-        for (const ws in this._myWorkspaces) {
-          if (ws['id'] === workspace) {
-            this._myWorkspaceName = ws['name'];
+        for (let i = 0; i < this._myWorkspaces.length; i++) {
+          if (this._myWorkspaces[i]['id'] === workspace) {
+            this._myWorkspaceName = this._myWorkspaces[i]['name'];
             break;
           }
         }
@@ -102,15 +110,21 @@ export class StatusService {
   set myWorkspaces(newWSList: WorkspaceData[]) {
     this._myWorkspaces = newWSList;
     let newWsId = 0;
+    const currentWsId = this.myWorkspaceId;
     if (this._myWorkspaces.length > 0) {
       newWsId = this._myWorkspaces[0]['id'];
-      for (const ws in this._myWorkspaces) {
-        if (ws['id'] === this._myWorkspaceId) {
-          newWsId = ws['id'];
+      for (let i = 0; i < this._myWorkspaces.length; i++) {
+        if (this._myWorkspaces[i]['id'] === currentWsId) {
+          newWsId = currentWsId;
           break;
         }
       }
-      this.myWorkspaceId = newWsId;
+      if (currentWsId !== newWsId) {
+        this.myWorkspaceId = newWsId;
+      } else {
+        // to ensure loading of workspacelist in admincomponent
+        this.workspaceChanged.emit(currentWsId);
+      }
     } else {
       this.myWorkspaceId = 0;
     }
@@ -145,15 +159,13 @@ export class StatusService {
           console.log('falssse');
         } else {
           this.bs.login((<FormGroup>result).get('name').value, (<FormGroup>result).get('pw').value).subscribe(
-            loginresponse => {
-              this.adminToken =  loginresponse.admintoken;
-              this.myLoginName = loginresponse.name;
-              this.lastloginname = loginresponse.name;
-              this.myWorkspaces = loginresponse.workspaces;
+            admintoken => {
+              this.adminToken = admintoken;
               this.communicationProblemMessage = '';
               this.router.navigateByUrl('/admin');
             }, (errormsg: string) => {
               this.communicationProblemMessage = errormsg;
+              this.router.navigateByUrl('/admin/blank');
             }
           );
         }
@@ -186,18 +198,6 @@ export class StatusService {
           }
         );
       }
-    });
-  }
-
-  // *******************************************************************************************************
-  loadStatus() {
-    this.bs.getStatus(this.adminToken).subscribe(
-      (rData: LoginStatusResponseData) => {
-        this.myWorkspaces = rData.workspaces;
-        this.myLoginName = rData.name;
-        this.communicationProblemMessage = '';
-      }, (errormsg: string) => {
-        this.communicationProblemMessage = errormsg;
     });
   }
 }

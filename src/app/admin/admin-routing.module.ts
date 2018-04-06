@@ -1,3 +1,5 @@
+import { BlankpageComponent } from './blankpage/blankpage.component';
+import { MonitorComponent } from './monitor/monitor.component';
 import { ResultsComponent } from './results/results.component';
 import { NgModule, Component } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
@@ -11,7 +13,10 @@ const routes: Routes = [
     children: [
       {path: '', redirectTo: 'myfiles', pathMatch: 'full'},
       {path: 'myfiles', component: MyfilesComponent},
-      {path: 'results', component: ResultsComponent}
+      {path: 'monitor', component: MonitorComponent},
+      {path: 'results', component: ResultsComponent},
+      {path: 'blank', component: BlankpageComponent},
+      {path: '**', component: BlankpageComponent}
     ]
   }];
 

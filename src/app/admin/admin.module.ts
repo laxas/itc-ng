@@ -17,6 +17,8 @@ import { ResultsComponent } from './results/results.component';
 import { MatTableModule, MatTabsModule, MatButtonModule, MatIconModule, MatToolbarModule,
   MatCheckboxModule, MatSortModule, MatDialogModule, MatTooltipModule, MatSnackBarModule,
   MatSelectModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule } from '@angular/material';
+import { MonitorComponent } from './monitor/monitor.component';
+import { BlankpageComponent } from './blankpage/blankpage.component';
 
 @NgModule({
   imports: [
@@ -49,6 +51,8 @@ import { MatTableModule, MatTabsModule, MatButtonModule, MatIconModule, MatToolb
     MyfilesComponent,
     LoginDialogComponent,
     ResultsComponent,
+    MonitorComponent,
+    BlankpageComponent,
   ],
   providers: [
     BackendService,

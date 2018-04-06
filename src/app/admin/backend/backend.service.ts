@@ -19,14 +19,14 @@ export class BackendService {
   }
 
   // *******************************************************************
-  login(name: string, password: string): Observable<LoginStatusResponseData> {
+  login(name: string, password: string): Observable<string> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
       })
     };
     return this.http
-      .post<LoginStatusResponseData>(this.serverUrl + 'loginAdmin.php', {n: name, p: password}, httpOptions)
+      .post<string>(this.serverUrl + 'loginAdmin.php', {n: name, p: password}, httpOptions)
         .pipe(
           catchError(this.handleError)
         );

@@ -1,4 +1,5 @@
 import { FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { MatTabsModule, MatSelectModule, MatFormFieldModule } from '@angular/material';
 import { StatusService } from './status.service';
@@ -12,7 +13,8 @@ import { BackendService, WorkspaceData, LoginStatusResponseData } from './backen
 export class AdminComponent implements OnInit {
   public navLinks = [
     {path: 'myfiles', label: 'Dateien'},
-    {path: 'results', label: 'Monitor'}
+    {path: 'monitor', label: 'Monitor'},
+    {path: 'results', label: 'Ergebnisse'}
   ];
   public isCommunicationProblem = false;
   public communicationProblemMessage = '';
@@ -23,6 +25,7 @@ export class AdminComponent implements OnInit {
   // CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
   constructor(
     private ass: StatusService,
+    private router: Router,
     private bs: BackendService
   ) {
     this.myWorkspaces = [];
@@ -30,30 +33,35 @@ export class AdminComponent implements OnInit {
 
   // CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
   ngOnInit() {
-    this.myWorkspaces = this.ass.myWorkspaces;
-    // this.selectedWorkspace = this.ass.myWorkspaceId;
-    this.isCommunicationProblem = this.ass.isCommunicationProblem;
-    this.communicationProblemMessage = this.ass.communicationProblemMessage;
-
     this.ass.communicationProblemChanged.subscribe((newstatus: boolean) => {
       this.isCommunicationProblem = newstatus;
       this.communicationProblemMessage = this.ass.communicationProblemMessage;
+      if (this.isCommunicationProblem) {
+        this.router.navigateByUrl('blank');
+      }
     });
 
     this.ass.workspaceChanged.subscribe(isLoggedIn => {
       this.myWorkspaces = this.ass.myWorkspaces;
-      // this.selectedWorkspace = this.ass.myWorkspaceId;
       this.wsSelector.setValue(this.ass.myWorkspaceId, {emitEvent: false});
-      console.log('.:' + this.ass.myWorkspaceId);
     });
 
     this.wsSelector.valueChanges
       .subscribe(wsId => {
         this.ass.myWorkspaceId = wsId;
-        console.log('.:xx' + typeof wsId);
-      });
+    });
 
-    this.ass.loadStatus();
+
+    // loads workspaces and sets old or first workspace
+    // due to the subscriptions above this Component will adapt
+    this.bs.getStatus(this.ass.adminToken).subscribe(
+      (rData: LoginStatusResponseData) => {
+        this.ass.myWorkspaces = rData.workspaces;
+        this.ass.myLoginName = rData.name;
+        this.communicationProblemMessage = '';
+      }, (errormsg: string) => {
+        this.communicationProblemMessage = errormsg;
+    });
   }
 
 
