@@ -3,15 +3,9 @@ import { Injectable, Component, Input, Output, EventEmitter } from '@angular/cor
 @Injectable()
 export class GlobalStoreService {
   @Output() titleChanged: EventEmitter<any> = new EventEmitter();
-  @Output() sessionStatusChanged: EventEmitter<any> = new EventEmitter();
-  @Output() navPrevEnabledChanged: EventEmitter<any> = new EventEmitter();
-  @Output() navNextEnabledChanged: EventEmitter<any> = new EventEmitter();
 
   private _title = 'IQB-Testcenter - Willkommen';
-  private _navPrevEnabled = false;
-  private _navNextEnabled = false;
   private _loginToken = '';
-  private _sessionToken = '';
 
   public readonly appName = 'IQB OpenCBA Testcenter';
   public readonly appPublisher = 'IQB - Institut zur Qualitätsentwicklung im Bildungswesen';
@@ -28,10 +22,6 @@ export class GlobalStoreService {
     return this._title;
   }
 
-  public isSession(): boolean {
-    return this._sessionToken.length > 0;
-  }
-
   // tokens __________________________________________________
   set loginToken(newToken: string) {
     if (newToken !== this._loginToken) {
@@ -44,41 +34,5 @@ export class GlobalStoreService {
       this._loginToken = localStorage.getItem('lt');
     }
     return this._loginToken;
-  }
-  set sessionToken(newToken: string) {
-    if (newToken !== this._sessionToken) {
-      localStorage.setItem('st', newToken);
-      this._sessionToken = newToken;
-      this.sessionStatusChanged.emit(this.isSession);
-    }
-  }
-  get sessionToken(): string {
-    if (this._sessionToken.length === 0) {
-      this._sessionToken = localStorage.getItem('st');
-    }
-    return this._sessionToken;
-  }
-
-  // NavPrevEnabled/NavNextEnabled __________________________
-  get navPrevEnabled(): boolean {
-    return this._navPrevEnabled;
-  }
-
-  get navNextEnabled(): boolean {
-    return this._navNextEnabled;
-  }
-
-  set navPrevEnabled(isEnabled: boolean) {
-    if (isEnabled !== this._navPrevEnabled) {
-      this._navPrevEnabled = isEnabled;
-      this.navPrevEnabledChanged.emit(isEnabled);
-    }
-  }
-
-  set navNextEnabled(isEnabled: boolean) {
-    if (isEnabled !== this._navNextEnabled) {
-      this._navNextEnabled = isEnabled;
-      this.navNextEnabledChanged.emit(isEnabled);
-    }
   }
 }

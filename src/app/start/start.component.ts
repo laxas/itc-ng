@@ -1,3 +1,4 @@
+import { TestdataService } from './../test-controller';
 import { MessageDialogComponent, MessageDialogData, MessageType } from './../iqb-common';
 import { MatDialog } from '@angular/material';
 import { BackendService, SessionData, GetSessionsResponseData } from './../shared/backend.service';
@@ -26,6 +27,7 @@ export class StartComponent implements OnInit {
 
   constructor(private fb: FormBuilder,
     private gss: GlobalStoreService,
+    private tss: TestdataService,
     public messsageDialog: MatDialog,
     private router: Router,
     private bs: BackendService) {
@@ -142,7 +144,7 @@ export class StartComponent implements OnInit {
     this.errorMessage = '';
     this.bs.startSession(this.gss.loginToken, this.code, myElement.value).subscribe(
       (sessiontoken: string) => {
-        this.gss.sessionToken = sessiontoken;
+        this.tss.sessionToken = sessiontoken;
         this.router.navigateByUrl('/t');
       }, (errormsg: string) => {
         this.isError = true;

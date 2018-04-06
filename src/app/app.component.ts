@@ -1,3 +1,4 @@
+import { TestdataService } from './test-controller';
 import { LoginStatusResponseData } from './admin/backend/backend.service';
 import { StatusService } from './admin';
 import { IqbCommonModule, ConfirmDialogComponent, ConfirmDialogData } from './iqb-common';
@@ -26,32 +27,39 @@ export class AppComponent implements OnInit {
   constructor (
     private gss: GlobalStoreService,
     private ass: StatusService,
+    private tss: TestdataService,
     private router: Router,
     private bs: BackendService,
     public aboutDialog: MatDialog) {  }
 
   ngOnInit() {
     this.title = this.gss.title;
-    this.navNextDisabled = !this.gss.navNextEnabled;
-    this.navPrevDisabled = !this.gss.navPrevEnabled;
+    this.navNextDisabled = !this.tss.navNextEnabled;
+    this.navPrevDisabled = !this.tss.navPrevEnabled;
     this.isAdmin = this.ass.isLoggedIn();
-    this.isSession = this.gss.isSession();
+    this.isSession = this.tss.isSession;
 
     this.gss.titleChanged.subscribe((newtitle: string) => {
       this.title = newtitle;
     });
-    this.gss.navNextEnabledChanged.subscribe((isEnabled: boolean) => {
+    this.tss.titleChanged.subscribe((newtitle: string) => {
+      this.title = newtitle;
+    });
+    this.tss.navNextEnabledChanged.subscribe((isEnabled: boolean) => {
       this.navNextDisabled = !isEnabled;
     });
-    this.gss.navPrevEnabledChanged.subscribe((isEnabled: boolean) => {
+    this.tss.navPrevEnabledChanged.subscribe((isEnabled: boolean) => {
       this.navPrevDisabled = !isEnabled;
     });
     this.ass.loginStatusChanged.subscribe((newloginstatus: boolean) => {
       this.isAdmin = newloginstatus;
     });
-    this.gss.sessionStatusChanged.subscribe(newWS => {
-      this.isSession = this.gss.isSession();
+    this.tss.sessionStatusChanged.subscribe(newWS => {
+      this.isSession = this.tss.isSession;
     });
+    window.addEventListener('message', (event) => {
+      this.tss.processMessagePost(event);
+    }, false);
   }
 
   // *******************************************************************************************************

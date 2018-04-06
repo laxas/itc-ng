@@ -1,7 +1,7 @@
+import { ReactiveFormsModule } from '@angular/forms';
 import 'rxjs/add/observable/from';
 import { Observable } from 'rxjs/Observable';
-import { GlobalStoreService } from './../shared/global-store.service';
-import { BackendService, GetXmlResponseData } from './backend.service';
+import { BackendService, GetXmlResponseData, ServerError } from './backend.service';
 import { Injectable, Component, Input, Output, EventEmitter, Pipe } from '@angular/core';
 import { Element } from '@angular/compiler';
 import { mergeMap } from 'rxjs/operators';
@@ -10,6 +10,64 @@ import { mergeMap } from 'rxjs/operators';
 export class TestdataService {
   @Output() currentUnitChanged: EventEmitter<any> = new EventEmitter();
   @Output() currentNavigationPointChanged: EventEmitter<any> = new EventEmitter();
+  @Output() problemArising: EventEmitter<any> = new EventEmitter();
+  @Output() titleChanged: EventEmitter<any> = new EventEmitter();
+  @Output() sessionStatusChanged: EventEmitter<any> = new EventEmitter();
+  @Output() navPrevEnabledChanged: EventEmitter<any> = new EventEmitter();
+  @Output() navNextEnabledChanged: EventEmitter<any> = new EventEmitter();
+
+  private _sessionToken = '';
+  set sessionToken(newToken: string) {
+    if (newToken !== this._sessionToken) {
+      localStorage.setItem('st', newToken);
+      this._sessionToken = newToken;
+      this.sessionStatusChanged.emit(this.isSession);
+    }
+  }
+  get sessionToken(): string {
+    if (this._sessionToken.length === 0) {
+      this._sessionToken = localStorage.getItem('st');
+    }
+    return this._sessionToken;
+  }
+  get isSession(): boolean {
+    return this._sessionToken.length > 0;
+  }
+
+  private _unitTitle = '';
+  set unitTitle(newTitle: string) {
+    if (newTitle !== this._unitTitle) {
+      this._unitTitle = newTitle;
+      this.titleChanged.emit(this.unitTitle);
+    }
+  }
+  get unitTitle(): string {
+    return this._unitTitle;
+  }
+
+  // NavPrevEnabled/NavNextEnabled __________________________
+  private _navPrevEnabled = false;
+  get navPrevEnabled(): boolean {
+    return this._navPrevEnabled;
+  }
+  set navPrevEnabled(isEnabled: boolean) {
+    if (isEnabled !== this._navPrevEnabled) {
+      this._navPrevEnabled = isEnabled;
+      this.navPrevEnabledChanged.emit(isEnabled);
+    }
+  }
+
+  private _navNextEnabled = false;
+  get navNextEnabled(): boolean {
+    return this._navNextEnabled;
+  }
+  set navNextEnabled(isEnabled: boolean) {
+    if (isEnabled !== this._navNextEnabled) {
+      this._navNextEnabled = isEnabled;
+      this.navNextEnabledChanged.emit(isEnabled);
+    }
+  }
+
 
   private _currentUnit: UnitDef;
   get currentUnit(): UnitDef {
@@ -25,10 +83,34 @@ export class TestdataService {
     return this.allUnits.length;
   }
 
-  private _errorMessage: string;
-  get errorMessage(): string {
-    return this._errorMessage;
+  private _isProblem: boolean;
+  get isProblem(): boolean {
+    return this._isProblem;
   }
+  set isProblem(p: boolean) {
+    this._isProblem = p;
+    if (p) {
+      this._problemMessage = 'Es ist ein Problem aufgetaucht.';
+      this.problemArising.emit(this._problemMessage);
+    } else {
+      this._problemMessage = '';
+    }
+  }
+
+  private _problemMessage: string;
+  get problemMessage(): string {
+    return this._problemMessage;
+  }
+  set problemMessage(msg: string) {
+    this._problemMessage = msg;
+    if (msg.length > 0) {
+      this._isProblem = true;
+      this.problemArising.emit(this._problemMessage);
+    } else {
+      this._isProblem = false;
+    }
+  }
+
 
   // private private private private private private private private
   private allUnits: UnitDef[];
@@ -36,11 +118,7 @@ export class TestdataService {
   private unitPointer: number; // '0' stands for no unit to point at
   private maxUnitPointer: number;
 
-
-
-
   constructor(
-    private gss: GlobalStoreService,
     private bs: BackendService
   ) {
     this._currentUnit = null;
@@ -48,11 +126,12 @@ export class TestdataService {
     this.allUnits = [];
     this.bookletname = '#booklet';
     this.unitPointer = 0;
+    this._unitTitle = 'Lade Seite...';
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
   private setCurrentUnit(newUnitId: number) {
-    this._errorMessage = '';
+    this.isProblem = false;
     if (newUnitId === 0) {
       this._currentUnit = null;
     } else {
@@ -69,7 +148,7 @@ export class TestdataService {
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
   loadBookletDefinition() {
-    this.bs.getBooklet(this.gss.sessionToken).subscribe(
+    this.bs.getBooklet(this.sessionToken).subscribe(
       (bdata: GetXmlResponseData) => {
         // Create Unit-List
         const oParser = new DOMParser();
@@ -91,6 +170,7 @@ export class TestdataService {
             this.maxUnitPointer = unitList.length;
             for (let i = 0; i < unitList.length; i++) {
               this.allUnits[i + 1] = new UnitDef(unitList[i].getAttribute('name'), unitList[i].getAttribute('title'));
+              this.allUnits[i + 1].sequenceId = i + 1;
             }
 
             // set current situation
@@ -100,13 +180,20 @@ export class TestdataService {
             this.setCurrentUnit(this.unitPointer);
           }
         }
-      }, (errormsg: string) => {
+      }, (err: ServerError) => {
+        this.problemMessage = err.label;
         this._currentUnit = null;
         this._currentNavigationPoint = null;
         this.allUnits = [];
         this.bookletname = '#booklet';
       }
     );
+  }
+
+  // /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+  // app.component.ngOnInit sets a listener on 'message'-event.
+  processMessagePost(postData) {
+    console.log(postData);
   }
 }
 
@@ -136,6 +223,7 @@ export class ResourceStore {
 
 // .....................................................................
 export class UnitDef {
+  sequenceId: number;
   name: string;
   title: string;
   resources: ResourceData[];
@@ -151,7 +239,6 @@ export class UnitDef {
   }
 
   getItemplayerHtml() {
-    console.log(this.resources.length + '<<');
     for (let i = 0; i < this.resources.length; i++) {
       console.log('>>' + this.resources[i].type);
       if (this.resources[i].type === 'itemplayer_html') {

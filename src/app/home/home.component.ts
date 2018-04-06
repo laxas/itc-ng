@@ -1,8 +1,10 @@
+import { TestdataService } from './../test-controller';
 import { BackendService } from './../shared/backend.service';
 import { Router } from '@angular/router';
 import { GlobalStoreService } from './../shared/global-store.service';
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormGroup, FormBuilder, FormArray, FormControl, Validators } from '@angular/forms';
+
 
 @Component({
   selector: 'tc-home',
@@ -18,19 +20,20 @@ export class HomeComponent implements OnInit {
   constructor(private fb: FormBuilder,
     private router: Router,
     private gss: GlobalStoreService,
+    private tss: TestdataService,
     private bs: BackendService) { }
 
   ngOnInit() {
     this.gss.title = 'IQB-Testcenter - Willkommen!';
-    this.isSession = this.gss.isSession();
+    this.isSession = this.tss.isSession;
 
     this.testtakerloginform = this.fb.group({
       testname: this.fb.control('', [Validators.required, Validators.minLength(3)]),
       testpw: this.fb.control('', [Validators.required, Validators.minLength(3)])
     });
 
-    this.gss.sessionStatusChanged.subscribe(newWS => {
-      this.isSession = this.gss.isSession();
+    this.tss.sessionStatusChanged.subscribe(newWS => {
+      this.isSession = this.tss.isSession;
     });
   }
 

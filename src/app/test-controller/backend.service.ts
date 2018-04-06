@@ -17,7 +17,7 @@ export class BackendService {
   constructor(private http: HttpClient) { }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
-  getBooklet(sessiontoken: string): Observable<GetXmlResponseData> {
+  getBooklet(sessiontoken: string): Observable<GetXmlResponseData | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
@@ -31,7 +31,7 @@ export class BackendService {
   }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
-  getUnit(sessiontoken: string, unitid: string): Observable<GetXmlResponseData> {
+  getUnit(sessiontoken: string, unitid: string): Observable<GetXmlResponseData | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
@@ -45,7 +45,7 @@ export class BackendService {
   }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
-  getUnitResource(sessiontoken: string, resId: string): Observable<string> {
+  getUnitResource(sessiontoken: string, resId: string): Observable<string | ServerError> {
     const myHttpOptions = {
           headers: new HttpHeaders({
             'Content-Type':  'application/json'
@@ -54,7 +54,7 @@ export class BackendService {
       };
 
       return this.http
-      .post<Response>(this.serverUrl + 'getUnitResource.php', {st: sessiontoken, r: resId}, myHttpOptions)
+      .post<ArrayBuffer>(this.serverUrl + 'getUnitResource.php', {st: sessiontoken, r: resId}, myHttpOptions)
         .pipe(
           catchError(this.handleError)
         )
@@ -68,7 +68,7 @@ export class BackendService {
         });
   }
   // 888888888888888888888888888888888888888888888888888888888888888888
-  getUnitResource64(sessiontoken: string, resId: string): Observable<string> {
+  getUnitResource64(sessiontoken: string, resId: string): Observable<string | ServerError> {
     const myHttpOptions = {
           headers: new HttpHeaders({
             'Content-Type':  'application/json'
@@ -77,14 +77,14 @@ export class BackendService {
       };
 
       return this.http
-      .post<Response>(this.serverUrl + 'getUnitResource64.php', {st: sessiontoken, r: resId}, myHttpOptions)
+      .post<string>(this.serverUrl + 'getUnitResource64.php', {st: sessiontoken, r: resId}, myHttpOptions)
         .pipe(
           catchError(this.handleError)
         );
   }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
-  getUnitResourceTxt(sessiontoken: string, resId: string): Observable<string> {
+  getUnitResourceTxt(sessiontoken: string, resId: string): Observable<string | ServerError> {
     const myHttpOptions = {
           headers: new HttpHeaders({
             'Content-Type':  'application/json'
@@ -93,24 +93,26 @@ export class BackendService {
       };
 
       return this.http
-      .post<Response>(this.serverUrl + 'getUnitResourceTxt.php', {st: sessiontoken, r: resId}, myHttpOptions)
+      .post<string>(this.serverUrl + 'getUnitResourceTxt.php', {st: sessiontoken, r: resId}, myHttpOptions)
         .pipe(
           catchError(this.handleError)
         );
   }
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-  private handleError(errorObj: HttpErrorResponse) {
-    let myreturn = 'Fehler bei Datenübertragung';
+  private handleError(errorObj: HttpErrorResponse): Observable<ServerError> {
+    let myreturn: ServerError = {
+      label: 'Fehler bei Datenübertragung',
+      code: errorObj.status
+    };
     if (errorObj.status === 401) {
-      myreturn = 'Fehler: Zugriff verweigert - bitte (neu) anmelden!';
+      myreturn.label = 'Fehler: Zugriff verweigert - bitte (neu) anmelden!';
     } else if (errorObj.status === 503) {
-      myreturn = 'Fehler: Server meldet Datenbankproblem.';
+      myreturn.label = 'Fehler: Server meldet Datenbankproblem.';
     } else if (errorObj.error instanceof ErrorEvent) {
-      myreturn = 'Fehler: ' + (<ErrorEvent>errorObj.error).message;
+      myreturn.label = 'Fehler: ' + (<ErrorEvent>errorObj.error).message;
     } else {
-      myreturn = 'Fehler: ' + errorObj.message;
+      myreturn.label = 'Fehler: ' + errorObj.message;
     }
 
     return new ErrorObservable(myreturn);
@@ -120,4 +122,9 @@ export class BackendService {
 export interface GetXmlResponseData {
   xml: string;
   status: string;
+}
+
+export interface ServerError {
+  code: number;
+  label: string;
 }

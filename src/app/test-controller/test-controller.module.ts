@@ -7,6 +7,8 @@ import { TestControllerRoutingModule } from './test-controller-routing.module';
 import { LoadingComponent } from './loading/loading.component';
 import { UnithostComponent } from './unithost/unithost.component';
 import { MatProgressSpinnerModule } from '@angular/material';
+import { StatusPageComponent } from './status-page/status-page.component';
+import { TestControllerComponent } from './test-controller.component';
 
 
 @NgModule({
@@ -17,14 +19,16 @@ import { MatProgressSpinnerModule } from '@angular/material';
   ],
   declarations: [
     LoadingComponent,
-    UnithostComponent
+    UnithostComponent,
+    StatusPageComponent,
+    TestControllerComponent
   ],
   providers: [
     TestdataService,
     BackendService
   ],
   exports: [
-    UnithostComponent
+    TestControllerComponent
   ]
 })
 export class TestControllerModule { }
