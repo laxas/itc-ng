@@ -19,7 +19,7 @@ export class BackendService {
   }
 
   // *******************************************************************
-  login(name: string, password: string): Observable<string> {
+  login(name: string, password: string): Observable<string | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
@@ -33,7 +33,7 @@ export class BackendService {
   }
 
   // *******************************************************************
-  logout(token: string): Observable<boolean> {
+  logout(token: string): Observable<boolean | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
@@ -47,7 +47,7 @@ export class BackendService {
   }
 
   // *******************************************************************
-  getStatus(token: string): Observable<LoginStatusResponseData> {
+  getStatus(token: string): Observable<LoginStatusResponseData | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
@@ -63,7 +63,7 @@ export class BackendService {
 
   // *******************************************************************
   // Fehlerbehandlung beim Aufrufer
-  getFiles(token: string, workspaceId: number): Observable<GetFileResponseData[]> {
+  getFiles(token: string, workspaceId: number): Observable<GetFileResponseData[] | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
@@ -78,7 +78,7 @@ export class BackendService {
 
   // *******************************************************************
   // Fehlerbehandlung beim Aufrufer
-  deleteFiles(token: string, workspaceId: number, filesToDelete: Array<string>): Observable<string> {
+  deleteFiles(token: string, workspaceId: number, filesToDelete: Array<string>): Observable<string | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
@@ -92,16 +92,19 @@ export class BackendService {
   }
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  private handleError(errorObj: HttpErrorResponse) {
-    let myreturn = 'Fehler bei Datenübertragung';
+  private handleError(errorObj: HttpErrorResponse): Observable<ServerError> {
+    let myreturn: ServerError = {
+      label: 'Fehler bei Datenübertragung',
+      code: errorObj.status
+    };
     if (errorObj.status === 401) {
-      myreturn = 'Fehler: Zugriff verweigert - bitte (neu) anmelden!';
+      myreturn.label = 'Fehler: Zugriff verweigert - bitte (neu) anmelden!';
     } else if (errorObj.status === 503) {
-      myreturn = 'Fehler: Server meldet Datenbankproblem.';
+      myreturn.label = 'Fehler: Server meldet Datenbankproblem.';
     } else if (errorObj.error instanceof ErrorEvent) {
-      myreturn = 'Fehler: ' + (<ErrorEvent>errorObj.error).message;
+      myreturn.label = 'Fehler: ' + (<ErrorEvent>errorObj.error).message;
     } else {
-      myreturn = 'Fehler: ' + errorObj.message;
+      myreturn.label = 'Fehler: ' + errorObj.message;
     }
 
     return new ErrorObservable(myreturn);
@@ -121,6 +124,11 @@ export interface LoginStatusResponseData {
 export interface WorkspaceData {
   id: number;
   name: string;
+}
+
+export interface ServerError {
+  code: number;
+  label: string;
 }
 
 export interface GetFileResponseData {

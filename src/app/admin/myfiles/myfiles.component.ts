@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material';
-import { BackendService, GetFileResponseData } from './../backend/backend.service';
+import { BackendService, GetFileResponseData, ServerError } from './../backend/backend.service';
 import { Input, Output, EventEmitter, Component, OnInit, Inject, ElementRef } from '@angular/core';
 import { NgModule, ViewChild } from '@angular/core';
 import { MatSort, MatDialog } from '@angular/material';
@@ -65,11 +65,17 @@ export class MyfilesComponent implements OnInit {
     });
 
     if (filesToDelete.length > 0) {
+      let prompt = 'Sie haben ';
+      if (filesToDelete.length > 1) {
+        prompt = prompt + filesToDelete.length + ' Dateien ausgewählt. Sollen';
+      } else {
+        prompt = prompt + ' eine Datei ausgewählt. Soll';
+      }
       const dialogRef = this.confirmDialog.open(ConfirmDialogComponent, {
         width: '400px',
         data: <ConfirmDialogData>{
           title: 'Löschen von Dateien',
-          content: 'Sie haben ' + filesToDelete.length + ' Dateien ausgewählt. Sollen diese gelöscht werden?',
+          content: prompt + ' diese gelöscht werden?',
           confirmbuttonlabel: 'Löschen'
         }
       });
@@ -85,8 +91,11 @@ export class MyfilesComponent implements OnInit {
               } else {
                 this.updateFileList(deletefilesresponse);
               }
-            }, (errormsg: string) => {
-             this.ass.communicationProblemMessage = errormsg;
+            }, (err: ServerError) => {
+              this.ass.communicationProblemMessage = err.label;
+              if (err.code === 401) {
+                this.ass.adminToken = '';
+              }
             });
           // =========================================================
         }
@@ -119,8 +128,11 @@ export class MyfilesComponent implements OnInit {
           this.serverfiles = new MatTableDataSource(filedataresponse);
           this.serverfiles.sort = this.sort;
           this.dataLoading = false;
-        }, (errormsg: string) => {
-          this.ass.communicationProblemMessage = errormsg;
+        }, (err: ServerError) => {
+          if (err.code === 401) {
+            this.ass.adminToken = '';
+          }
+          this.ass.communicationProblemMessage = err.label;
           this.dataLoading = false;
         }
       );

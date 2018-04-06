@@ -3,7 +3,7 @@ import { Injectable, Component, Input, Output, EventEmitter } from '@angular/cor
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { Router } from '@angular/router';
 import { LoginDialogComponent } from './login-dialog/login-dialog.component';
-import { BackendService, LoginStatusResponseData, WorkspaceData } from './backend/backend.service';
+import { BackendService, LoginStatusResponseData, WorkspaceData, ServerError } from './backend/backend.service';
 import { FormGroup } from '@angular/forms';
 
 @Injectable()
@@ -45,6 +45,7 @@ export class StatusService {
     if (newToken !== this._adminToken) {
       this._adminToken = newToken;
       localStorage.setItem('at', newToken);
+      this.loginStatusChanged.emit(this.isLoggedIn());
     }
   }
   get adminToken(): string {
@@ -62,13 +63,12 @@ export class StatusService {
 
 
   public isLoggedIn(): boolean {
-    return this._adminToken.length > 0;
+    return this.adminToken.length > 0;
   }
 
   set myLoginName(loginname: string) {
     if (loginname !== this._myLoginName) {
       this._myLoginName = loginname;
-      this.loginStatusChanged.emit(this.isLoggedIn());
     }
   }
 
@@ -159,12 +159,15 @@ export class StatusService {
           console.log('falssse');
         } else {
           this.bs.login((<FormGroup>result).get('name').value, (<FormGroup>result).get('pw').value).subscribe(
-            admintoken => {
+            (admintoken: string) => {
               this.adminToken = admintoken;
               this.communicationProblemMessage = '';
               this.router.navigateByUrl('/admin');
-            }, (errormsg: string) => {
-              this.communicationProblemMessage = errormsg;
+            }, (err: ServerError) => {
+              this.communicationProblemMessage = err.label;
+              if (err.code === 401) {
+                this.adminToken = '';
+              }
               this.router.navigateByUrl('/admin/blank');
             }
           );
@@ -193,8 +196,12 @@ export class StatusService {
             this.adminToken = '';
             this.communicationProblemMessage = '';
             this.router.navigateByUrl('/');
-          }, (errormsg: string) => {
-            this.communicationProblemMessage = errormsg;
+          }, (err: ServerError) => {
+            this.communicationProblemMessage = err.label;
+            this.myLoginName = '';
+            this.myWorkspaces = [];
+            this.adminToken = '';
+            this.router.navigateByUrl('/');
           }
         );
       }

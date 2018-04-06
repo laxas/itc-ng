@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { MatTabsModule, MatSelectModule, MatFormFieldModule } from '@angular/material';
 import { StatusService } from './status.service';
-import { BackendService, WorkspaceData, LoginStatusResponseData } from './backend/backend.service';
+import { BackendService, WorkspaceData, LoginStatusResponseData, ServerError } from './backend/backend.service';
 
 
 @Component({
@@ -59,8 +59,11 @@ export class AdminComponent implements OnInit {
         this.ass.myWorkspaces = rData.workspaces;
         this.ass.myLoginName = rData.name;
         this.communicationProblemMessage = '';
-      }, (errormsg: string) => {
-        this.communicationProblemMessage = errormsg;
+      }, (err: ServerError) => {
+        this.ass.communicationProblemMessage = err.label;
+        if (err.code === 401) {
+          this.ass.adminToken = '';
+        }
     });
   }
 
