@@ -82,4 +82,12 @@ export class AppComponent implements OnInit {
   logout() {
     this.ass.logout();
   }
+
+  navPrev() {
+    this.tss.gotoPrevUnit();
+  }
+
+  navNext() {
+    this.tss.gotoNextUnit();
+  }
 }

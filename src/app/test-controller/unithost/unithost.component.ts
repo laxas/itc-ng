@@ -26,19 +26,22 @@ export class UnithostComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.iFrameHostElement = <HTMLElement>document.querySelector('#iFrameHost');
+
     this.iFrameItemplayer = null;
 
     this.routingSubscription = this.route.params.subscribe(
       params => {
         // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-        console.log('entering unithost.component with parameter >' + params['u'] + '<');
+        while (this.iFrameHostElement.hasChildNodes()) {
+          this.iFrameHostElement.removeChild(this.iFrameHostElement.lastChild);
+        }
 
         const myUnit = this.tss.currentUnit;
         if (myUnit !== null) {
           console.log(myUnit);
           this.iFrameItemplayer = <HTMLIFrameElement>document.createElement('iframe');
           this.iFrameItemplayer.setAttribute('srcdoc', myUnit.getItemplayerHtml());
-          this.iFrameItemplayer.setAttribute('sandbox', 'allow-forms allow-scripts');
+          this.iFrameItemplayer.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin');
           this.iFrameItemplayer.setAttribute('class', 'unitHost');
           this.iFrameItemplayer.setAttribute('height', String(this.iFrameHostElement.clientHeight));
 

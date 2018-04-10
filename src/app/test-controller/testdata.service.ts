@@ -115,8 +115,7 @@ export class TestdataService {
   // private private private private private private private private
   private allUnits: UnitDef[];
   private bookletname: string;
-  private unitPointer: number; // '0' stands for no unit to point at
-  private maxUnitPointer: number;
+  private unitCount: number;
 
   constructor(
     private bs: BackendService
@@ -125,25 +124,41 @@ export class TestdataService {
     this._currentNavigationPoint = null;
     this.allUnits = [];
     this.bookletname = '#booklet';
-    this.unitPointer = 0;
+    this.unitCount = 0;
     this._unitTitle = 'Lade Seite...';
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
   private setCurrentUnit(newUnitId: number) {
     this.isProblem = false;
-    if (newUnitId === 0) {
+    if (newUnitId < 0) {
       this._currentUnit = null;
     } else {
       this._currentUnit = this.allUnits[newUnitId];
+      this.navNextEnabled = newUnitId < this.unitcount - 1;
+      this.navPrevEnabled = newUnitId > 0;
     }
     this.currentUnitChanged.emit(this._currentUnit);
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
-  private setCurrentNavigationPoint(newNavigationPoint: NavigationPoint) {
-    this._currentNavigationPoint = newNavigationPoint;
-    this.currentNavigationPointChanged.emit(newNavigationPoint);
+  public gotoPrevUnit() {
+    if (this.currentUnit !== null) {
+      const thisUnitNumber = this.currentUnit.sequenceId;
+      if (thisUnitNumber > 0) {
+        this.setCurrentUnit(thisUnitNumber - 1);
+      }
+    }
+  }
+
+  // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+  public gotoNextUnit() {
+    if (this.currentUnit !== null) {
+      const thisUnitNumber = this.currentUnit.sequenceId;
+      if (thisUnitNumber < this.unitcount - 1) {
+        this.setCurrentUnit(thisUnitNumber + 1);
+      }
+    }
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
@@ -167,17 +182,14 @@ export class TestdataService {
           if (unitsElements.length > 0) {
             const unitsElement = unitsElements[0];
             const unitList = unitsElement.getElementsByTagName('Unit');
-            this.maxUnitPointer = unitList.length;
-            for (let i = 0; i < unitList.length; i++) {
-              this.allUnits[i + 1] = new UnitDef(unitList[i].getAttribute('name'), unitList[i].getAttribute('title'));
-              this.allUnits[i + 1].sequenceId = i + 1;
+            this.unitCount = unitList.length;
+            for (let i = 0; i < this.unitCount; i++) {
+              this.allUnits[i] = new UnitDef(unitList[i].getAttribute('name'), unitList[i].getAttribute('title'));
+              this.allUnits[i].sequenceId = i;
             }
 
-            // set current situation
-            this.unitPointer = 1;
-
-            // triggers ItemplayerComponent to reload
-            this.setCurrentUnit(this.unitPointer);
+            // triggers testcontroller to load unit
+            this.setCurrentUnit(0);
           }
         }
       }, (err: ServerError) => {
