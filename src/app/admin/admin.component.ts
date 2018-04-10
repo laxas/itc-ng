@@ -1,5 +1,5 @@
 import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { MatTabsModule, MatSelectModule, MatFormFieldModule } from '@angular/material';
 import { StatusService } from './status.service';
@@ -26,7 +26,8 @@ export class AdminComponent implements OnInit {
   constructor(
     private ass: StatusService,
     private router: Router,
-    private bs: BackendService
+    private route: ActivatedRoute,
+        private bs: BackendService
   ) {
     this.myWorkspaces = [];
   }
@@ -37,7 +38,7 @@ export class AdminComponent implements OnInit {
       this.isCommunicationProblem = newstatus;
       this.communicationProblemMessage = this.ass.communicationProblemMessage;
       if (this.isCommunicationProblem) {
-        this.router.navigateByUrl('blank');
+        this.router.navigate(['blank'], { relativeTo: this.route });
       }
     });
 

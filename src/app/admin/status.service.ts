@@ -51,6 +51,9 @@ export class StatusService {
   get adminToken(): string {
     if (this._adminToken.length === 0) {
       this._adminToken = localStorage.getItem('at');
+      if (this._adminToken === null) {
+        this._adminToken = '';
+      }
     }
     return this._adminToken;
   }
@@ -80,8 +83,10 @@ export class StatusService {
   get myWorkspaceId(): number {
     if (this._myWorkspaceId === 0) {
       const wsIdStr = localStorage.getItem('ws');
-      if (wsIdStr.length > 0) {
-        this._myWorkspaceId = +wsIdStr;
+      if (wsIdStr !== null) {
+        if (wsIdStr.length > 0) {
+          this._myWorkspaceId = +wsIdStr;
+        }
       }
     }
     return this._myWorkspaceId;

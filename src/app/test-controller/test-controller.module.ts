@@ -9,6 +9,7 @@ import { UnithostComponent } from './unithost/unithost.component';
 import { MatProgressSpinnerModule } from '@angular/material';
 import { StatusPageComponent } from './status-page/status-page.component';
 import { TestControllerComponent } from './test-controller.component';
+import { ResizeIFrameChildDirective } from './resize-IFrameChild/resize-IFrameChild.directive';
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import { TestControllerComponent } from './test-controller.component';
     LoadingComponent,
     UnithostComponent,
     StatusPageComponent,
-    TestControllerComponent
+    TestControllerComponent,
+    ResizeIFrameChildDirective
   ],
   providers: [
     TestdataService,

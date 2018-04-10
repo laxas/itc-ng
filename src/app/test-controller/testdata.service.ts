@@ -193,6 +193,7 @@ export class TestdataService {
   // /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   // app.component.ngOnInit sets a listener on 'message'-event.
   processMessagePost(postData) {
+    console.log('TestdataService.processMessagePost');
     console.log(postData);
   }
 }

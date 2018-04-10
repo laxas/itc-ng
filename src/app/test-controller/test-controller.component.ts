@@ -1,5 +1,5 @@
 import { BackendService, GetXmlResponseData } from './backend.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { TestdataService, UnitDef, ResourceData } from './testdata.service';
 
@@ -13,6 +13,7 @@ export class TestControllerComponent implements OnInit {
   constructor(
     private tss: TestdataService,
     private router: Router,
+    private route: ActivatedRoute,
     private bs: BackendService
   ) {
     this.dataLoading = false;
@@ -76,11 +77,11 @@ export class TestControllerComponent implements OnInit {
                 }
                 Promise.all(ResourceFetchPromises)
                   .then(promisesReturnValues => {
-                    this.router.navigate(['u', newUnit.sequenceId]);
+                    this.router.navigate(['u', newUnit.sequenceId], { relativeTo: this.route });
                   });
 
                 } else {
-                  this.router.navigate(['u', newUnit.sequenceId]);
+                  this.router.navigate(['u', newUnit.sequenceId], { relativeTo: this.route });
               }
             }
           }
