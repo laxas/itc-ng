@@ -24,7 +24,7 @@ export class TestControllerComponent implements OnInit {
       if (newUnit == null) {
         this.router.navigate(['p']);
       } else {
-        this.tss.unitTitle = newUnit.name;
+        this.tss.updatePageTitle(newUnit.name);
         this.tss.isProblem = false;
 
         this.bs.getUnit(this.tss.sessionToken, newUnit.name).subscribe(

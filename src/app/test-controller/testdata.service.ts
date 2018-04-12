@@ -1,3 +1,4 @@
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ReactiveFormsModule } from '@angular/forms';
 import 'rxjs/add/observable/from';
 import { Observable } from 'rxjs/Observable';
@@ -11,10 +12,12 @@ export class TestdataService {
   @Output() currentUnitChanged: EventEmitter<any> = new EventEmitter();
   @Output() currentNavigationPointChanged: EventEmitter<any> = new EventEmitter();
   @Output() problemArising: EventEmitter<any> = new EventEmitter();
-  @Output() titleChanged: EventEmitter<any> = new EventEmitter();
   @Output() sessionStatusChanged: EventEmitter<any> = new EventEmitter();
-  @Output() navPrevEnabledChanged: EventEmitter<any> = new EventEmitter();
-  @Output() navNextEnabledChanged: EventEmitter<any> = new EventEmitter();
+
+  // title __________________________________________________
+  public pageTitle$ = new BehaviorSubject<string>('Lade Seite...');
+  public navPrevEnabled$ = new BehaviorSubject<boolean>(false);
+  public navNextEnabled$ = new BehaviorSubject<boolean>(false);
 
   private _sessionToken = '';
   set sessionToken(newToken: string) {
@@ -32,40 +35,6 @@ export class TestdataService {
   }
   get isSession(): boolean {
     return this._sessionToken.length > 0;
-  }
-
-  private _unitTitle = '';
-  set unitTitle(newTitle: string) {
-    if (newTitle !== this._unitTitle) {
-      this._unitTitle = newTitle;
-      this.titleChanged.emit(this.unitTitle);
-    }
-  }
-  get unitTitle(): string {
-    return this._unitTitle;
-  }
-
-  // NavPrevEnabled/NavNextEnabled __________________________
-  private _navPrevEnabled = false;
-  get navPrevEnabled(): boolean {
-    return this._navPrevEnabled;
-  }
-  set navPrevEnabled(isEnabled: boolean) {
-    if (isEnabled !== this._navPrevEnabled) {
-      this._navPrevEnabled = isEnabled;
-      this.navPrevEnabledChanged.emit(isEnabled);
-    }
-  }
-
-  private _navNextEnabled = false;
-  get navNextEnabled(): boolean {
-    return this._navNextEnabled;
-  }
-  set navNextEnabled(isEnabled: boolean) {
-    if (isEnabled !== this._navNextEnabled) {
-      this._navNextEnabled = isEnabled;
-      this.navNextEnabledChanged.emit(isEnabled);
-    }
   }
 
 
@@ -125,7 +94,16 @@ export class TestdataService {
     this.allUnits = [];
     this.bookletname = '#booklet';
     this.unitCount = 0;
-    this._unitTitle = 'Lade Seite...';
+  }
+
+  updatePageTitle(newTitle) {
+    this.pageTitle$.next(newTitle);
+  }
+  updateNavPrevEnabled(newEnabled) {
+    this.navPrevEnabled$.next(newEnabled);
+  }
+  updateNavNextEnabled(newEnabled) {
+    this.navNextEnabled$.next(newEnabled);
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
@@ -135,8 +113,8 @@ export class TestdataService {
       this._currentUnit = null;
     } else {
       this._currentUnit = this.allUnits[newUnitId];
-      this.navNextEnabled = newUnitId < this.unitcount - 1;
-      this.navPrevEnabled = newUnitId > 0;
+      this.updateNavNextEnabled(newUnitId < this.unitcount - 1);
+      this.updateNavPrevEnabled(newUnitId > 0);
     }
     this.currentUnitChanged.emit(this._currentUnit);
   }

@@ -1,4 +1,3 @@
-import { BlankpageComponent } from './blankpage/blankpage.component';
 import { MonitorComponent } from './monitor/monitor.component';
 import { ResultsComponent } from './results/results.component';
 import { NgModule, Component } from '@angular/core';
@@ -15,8 +14,7 @@ const routes: Routes = [
       {path: 'myfiles', component: MyfilesComponent},
       {path: 'monitor', component: MonitorComponent},
       {path: 'results', component: ResultsComponent},
-      {path: 'blank', component: BlankpageComponent},
-      {path: '**', component: BlankpageComponent}
+      {path: '**', component: MyfilesComponent}
     ]
   }];
 

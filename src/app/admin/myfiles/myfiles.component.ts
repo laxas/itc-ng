@@ -26,8 +26,7 @@ export class MyfilesComponent implements OnInit {
   public dataLoading = false;
 
   // for iqb-FileUpload
-  public token = '';
-  public workspace = 0;
+  private isAdmin = false;
 
   @ViewChild(MatSort) sort: MatSort;
 
@@ -35,17 +34,17 @@ export class MyfilesComponent implements OnInit {
     private ass: StatusService,
     public confirmDialog: MatDialog,
     public messsageDialog: MatDialog,
-    public snackBar: MatSnackBar) { }
+    public snackBar: MatSnackBar
+  ) {
+    this.ass.isAdmin$.subscribe(i => {
+      this.isAdmin = i;
+    });
+  }
 
   ngOnInit() {
-    this.ass.workspaceChanged.subscribe(newWS => {
-      this.updateFileList(1);
-      this.workspace = newWS;
+    this.ass.workspaceId$.subscribe(ws => {
+      this.updateFileList();
     });
-
-    this.workspace = this.ass.myWorkspaceId;
-    this.token = this.ass.adminToken;
-    this.updateFileList(1); // Dummy-Parameter um zu verhindern, dass MatSnackBar anspringt
   }
 
   // ***********************************************************************************
@@ -84,18 +83,16 @@ export class MyfilesComponent implements OnInit {
         if (result === true) {
           // =========================================================
           this.dataLoading = true;
-          this.bs.deleteFiles(this.ass.adminToken, this.ass.myWorkspaceId, filesToDelete).subscribe(
+          this.bs.deleteFiles(this.ass.adminToken, this.ass.workspaceId$.getValue(), filesToDelete).subscribe(
             (deletefilesresponse: string) => {
               if ((deletefilesresponse.length > 5) && (deletefilesresponse.substr(0, 2) === 'e:')) {
                 this.snackBar.open(deletefilesresponse.substr(2), 'Fehler', {duration: 1000});
               } else {
-                this.updateFileList(deletefilesresponse);
+                this.snackBar.open(deletefilesresponse, '', {duration: 1000});
+                this.updateFileList();
               }
             }, (err: ServerError) => {
-              this.ass.communicationProblemMessage = err.label;
-              if (err.code === 401) {
-                this.ass.adminToken = '';
-              }
+              this.ass.updateAdminStatus('', '', [], err.label);
             });
           // =========================================================
         }
@@ -114,28 +111,28 @@ export class MyfilesComponent implements OnInit {
   }
 
   // ***********************************************************************************
-  updateFileList(eventdata: any) {
-    this.dataLoading = true;
-    if (typeof eventdata === 'string') {
-      this.snackBar.open(eventdata, '', {duration: 1000});
-    }
-    if (this.ass.myWorkspaceId === 0) {
+  updateFileList() {
+    if (this.isAdmin) {
+      const myWorkspaceId = this.ass.workspaceId$.getValue();
+      if (myWorkspaceId < 0) {
+        this.serverfiles = null;
+        this.dataLoading = false;
+      } else {
+        this.dataLoading = true;
+        this.bs.getFiles(this.ass.adminToken, myWorkspaceId).subscribe(
+          (filedataresponse: GetFileResponseData[]) => {
+            this.serverfiles = new MatTableDataSource(filedataresponse);
+            this.serverfiles.sort = this.sort;
+            this.dataLoading = false;
+          }, (err: ServerError) => {
+            this.ass.updateAdminStatus('', '', [], err.label);
+            this.dataLoading = false;
+          }
+        );
+      }
+    } else {
       this.serverfiles = null;
       this.dataLoading = false;
-    } else {
-      this.bs.getFiles(this.ass.adminToken, this.ass.myWorkspaceId).subscribe(
-        (filedataresponse: GetFileResponseData[]) => {
-          this.serverfiles = new MatTableDataSource(filedataresponse);
-          this.serverfiles.sort = this.sort;
-          this.dataLoading = false;
-        }, (err: ServerError) => {
-          if (err.code === 401) {
-            this.ass.adminToken = '';
-          }
-          this.ass.communicationProblemMessage = err.label;
-          this.dataLoading = false;
-        }
-      );
     }
   }
 }

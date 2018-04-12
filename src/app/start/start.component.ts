@@ -39,7 +39,7 @@ export class StartComponent implements OnInit {
     }
 
   ngOnInit() {
-    this.gss.title = 'IQB-Testcenter - Start';
+    this.gss.updatePageTitle('IQB-Testcenter - Start');
 
     this.codeinputform = this.fb.group({
       code: this.fb.control('', [Validators.required, Validators.minLength(1)])

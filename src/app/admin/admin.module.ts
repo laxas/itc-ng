@@ -18,7 +18,6 @@ import { MatTableModule, MatTabsModule, MatButtonModule, MatIconModule, MatToolb
   MatCheckboxModule, MatSortModule, MatDialogModule, MatTooltipModule, MatSnackBarModule,
   MatSelectModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule } from '@angular/material';
 import { MonitorComponent } from './monitor/monitor.component';
-import { BlankpageComponent } from './blankpage/blankpage.component';
 
 @NgModule({
   imports: [
@@ -51,8 +50,7 @@ import { BlankpageComponent } from './blankpage/blankpage.component';
     MyfilesComponent,
     LoginDialogComponent,
     ResultsComponent,
-    MonitorComponent,
-    BlankpageComponent,
+    MonitorComponent
   ],
   providers: [
     BackendService,

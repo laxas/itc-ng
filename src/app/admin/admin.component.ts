@@ -1,9 +1,9 @@
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { FormControl } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { MatTabsModule, MatSelectModule, MatFormFieldModule } from '@angular/material';
 import { StatusService } from './status.service';
-import { BackendService, WorkspaceData, LoginStatusResponseData, ServerError } from './backend/backend.service';
+import { WorkspaceData } from './backend/backend.service';
 
 
 @Component({
@@ -16,57 +16,43 @@ export class AdminComponent implements OnInit {
     {path: 'monitor', label: 'Monitor'},
     {path: 'results', label: 'Ergebnisse'}
   ];
-  public isCommunicationProblem = false;
-  public communicationProblemMessage = '';
-  // public selectedWorkspace = 0;
-  public myWorkspaces: WorkspaceData[];
-  public wsSelector = new FormControl();
+
+  private isAdmin = false;
+  private myWorkspaces: WorkspaceData[];
+  private notLoggedInMessage = '';
+
+  private wsSelector = new FormControl();
 
   // CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
   constructor(
-    private ass: StatusService,
-    private router: Router,
-    private route: ActivatedRoute,
-        private bs: BackendService
+    private ass: StatusService
   ) {
-    this.myWorkspaces = [];
+    this.ass.isAdmin$.subscribe(i => {
+      this.isAdmin = i;
+    });
+    this.ass.workspaceList$.subscribe(wsL => {
+      this.myWorkspaces = wsL;
+    });
+    this.ass.notLoggedInMessage$.subscribe(msg => {
+      if ((msg === null) || (msg.length === 0)) {
+        this.notLoggedInMessage = 'Bitte anmelden!';
+      } else {
+        this.notLoggedInMessage = msg;
+      }
+    });
   }
 
   // CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
   ngOnInit() {
-    this.ass.communicationProblemChanged.subscribe((newstatus: boolean) => {
-      this.isCommunicationProblem = newstatus;
-      this.communicationProblemMessage = this.ass.communicationProblemMessage;
-      if (this.isCommunicationProblem) {
-        this.router.navigate(['blank'], { relativeTo: this.route });
-      }
-    });
-
-    this.ass.workspaceChanged.subscribe(isLoggedIn => {
-      this.myWorkspaces = this.ass.myWorkspaces;
-      this.wsSelector.setValue(this.ass.myWorkspaceId, {emitEvent: false});
+    this.ass.workspaceId$.subscribe(id => {
+      this.wsSelector.setValue(id, {emitEvent: false});
     });
 
     this.wsSelector.valueChanges
       .subscribe(wsId => {
-        this.ass.myWorkspaceId = wsId;
+        this.ass.updateWorkspaceId(wsId);
     });
 
-
-    // loads workspaces and sets old or first workspace
-    // due to the subscriptions above this Component will adapt
-    this.bs.getStatus(this.ass.adminToken).subscribe(
-      (rData: LoginStatusResponseData) => {
-        this.ass.myWorkspaces = rData.workspaces;
-        this.ass.myLoginName = rData.name;
-        this.communicationProblemMessage = '';
-      }, (err: ServerError) => {
-        this.ass.communicationProblemMessage = err.label;
-        if (err.code === 401) {
-          this.ass.adminToken = '';
-        }
-    });
+    this.ass.updatePageTitle('Testverwaltung');
   }
-
-
 }

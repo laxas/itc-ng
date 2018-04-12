@@ -1,3 +1,11 @@
+import { merge } from 'rxjs/observable/merge';
+import { Observable } from 'rxjs/Observable';
+import { Observer } from 'rxjs/Observer';
+import { Subscriber } from 'rxjs/Subscriber';
+import { Subscription } from 'rxjs/Subscription';
+
+import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
+import { switchMap } from 'rxjs/operators/switchMap';
 import { TestdataService } from './test-controller';
 import { LoginStatusResponseData } from './admin/backend/backend.service';
 import { StatusService } from './admin';
@@ -18,11 +26,11 @@ import { FormGroup } from '@angular/forms';
 
 
 export class AppComponent implements OnInit {
-  public title: string;
-  public navPrevDisabled: boolean;
-  public navNextDisabled: boolean;
-  public isAdmin: boolean;
-  public isSession: boolean;
+  public title = '';
+  public navPrevEnabled = true;
+  public navNextEnabled = true;
+  public isAdmin = false;
+  public isSession = false;
 
   constructor (
     private gss: GlobalStoreService,
@@ -33,30 +41,27 @@ export class AppComponent implements OnInit {
     public aboutDialog: MatDialog) {  }
 
   ngOnInit() {
-    this.title = this.gss.title;
-    this.navNextDisabled = !this.tss.navNextEnabled;
-    this.navPrevDisabled = !this.tss.navPrevEnabled;
-    this.isAdmin = this.ass.isLoggedIn();
-    this.isSession = this.tss.isSession;
+    merge(
+      this.gss.pageTitle$,
+      this.tss.pageTitle$,
+      this.ass.pageTitle$).subscribe(t => {
+        this.title = t;
+      });
 
-    this.gss.titleChanged.subscribe((newtitle: string) => {
-      this.title = newtitle;
+    this.tss.navNextEnabled$.subscribe(e => {
+      this.navNextEnabled = e;
     });
-    this.tss.titleChanged.subscribe((newtitle: string) => {
-      this.title = newtitle;
+    this.tss.navPrevEnabled$.subscribe(e => {
+      this.navPrevEnabled = e;
     });
-    this.tss.navNextEnabledChanged.subscribe((isEnabled: boolean) => {
-      this.navNextDisabled = !isEnabled;
+    this.ass.isAdmin$.subscribe(i => {
+      this.isAdmin = i;
     });
-    this.tss.navPrevEnabledChanged.subscribe((isEnabled: boolean) => {
-      this.navPrevDisabled = !isEnabled;
-    });
-    this.ass.loginStatusChanged.subscribe((newloginstatus: boolean) => {
-      this.isAdmin = newloginstatus;
-    });
+
     this.tss.sessionStatusChanged.subscribe(newWS => {
       this.isSession = this.tss.isSession;
     });
+
     window.addEventListener('message', (event) => {
       this.tss.processMessagePost(event);
     }, false);
@@ -67,7 +72,7 @@ export class AppComponent implements OnInit {
     const dialogRef = this.aboutDialog.open(AboutDialogComponent, {
       width: '500px',
       data: {
-        status: this.isAdmin ? ('angemeldet als ' + this.ass.myLoginName) : 'nicht angemeldet',
+        status: this.isAdmin ? ('angemeldet als ' + this.ass.loginName$.getValue()) : 'nicht angemeldet',
         workspace: this.isAdmin ? this.ass.myWorkspaceName : '-'
       }
     });

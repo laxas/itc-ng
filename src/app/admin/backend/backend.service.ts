@@ -19,14 +19,14 @@ export class BackendService {
   }
 
   // *******************************************************************
-  login(name: string, password: string): Observable<string | ServerError> {
+  login(name: string, password: string): Observable<LoginStatusResponseData | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
       })
     };
     return this.http
-      .post<string>(this.serverUrl + 'loginAdmin.php', {n: name, p: password}, httpOptions)
+      .post<LoginStatusResponseData>(this.serverUrl + 'loginAdmin.php', {n: name, p: password}, httpOptions)
         .pipe(
           catchError(this.handleError)
         );
@@ -93,7 +93,7 @@ export class BackendService {
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   private handleError(errorObj: HttpErrorResponse): Observable<ServerError> {
-    let myreturn: ServerError = {
+    const myreturn: ServerError = {
       label: 'Fehler bei Datenübertragung',
       code: errorObj.status
     };
@@ -115,7 +115,6 @@ export class BackendService {
 // #############################################################################################
 
 export interface LoginStatusResponseData {
-  isValidLogin: boolean;
   admintoken: string;
   name: string;
   workspaces: WorkspaceData[];

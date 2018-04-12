@@ -24,7 +24,7 @@ export class HomeComponent implements OnInit {
     private bs: BackendService) { }
 
   ngOnInit() {
-    this.gss.title = 'IQB-Testcenter - Willkommen!';
+    this.gss.updatePageTitle('IQB-Testcenter - Willkommen!');
     this.isSession = this.tss.isSession;
 
     this.testtakerloginform = this.fb.group({
