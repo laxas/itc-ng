@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { FormControl } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
@@ -27,9 +28,7 @@ export class AdminComponent implements OnInit {
   constructor(
     private ass: StatusService
   ) {
-    this.ass.isAdmin$.subscribe(i => {
-      this.isAdmin = i;
-    });
+    this.ass.isAdmin$.subscribe(is => this.isAdmin = is);
     this.ass.workspaceList$.subscribe(wsL => {
       this.myWorkspaces = wsL;
     });

@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { ActivatedRoute } from '@angular/router';
 import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
+import { Location } from '@angular/common';
 
 @Component({
   templateUrl: './unithost.component.html',
@@ -11,9 +12,9 @@ import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
 })
 
 export class UnithostComponent implements OnInit, OnDestroy {
-  private myMessage = '';
-  public dataLoading = false;
-  public showIframe = false;
+  private message = '';
+
+  // public showIframe = false;
   private iFrameHostElement: HTMLElement;
   private iFrameItemplayer: HTMLIFrameElement;
   private routingSubscription: Subscription;
@@ -21,8 +22,13 @@ export class UnithostComponent implements OnInit, OnDestroy {
   constructor(
     private tss: TestdataService,
     private bs: BackendService,
+    private location: Location,
     private route: ActivatedRoute
-  ) { }
+  ) {
+    this.tss.statusmessage$.subscribe(s => {
+      this.message = s;
+    });
+  }
 
   ngOnInit() {
     this.iFrameHostElement = <HTMLElement>document.querySelector('#iFrameHost');
@@ -36,9 +42,13 @@ export class UnithostComponent implements OnInit, OnDestroy {
           this.iFrameHostElement.removeChild(this.iFrameHostElement.lastChild);
         }
 
-        const myUnit = this.tss.currentUnit;
-        if (myUnit !== null) {
-          console.log(myUnit);
+        const myUnit = this.tss.currentUnit$.getValue();
+        if (myUnit === null) {
+            const messageElement = <HTMLElement>document.createElement('p');
+            messageElement.setAttribute('class', 'unitMessage');
+            messageElement.innerHTML = this.tss.statusmessage$.getValue();
+            this.iFrameHostElement.appendChild(messageElement);
+        } else {
           this.iFrameItemplayer = <HTMLIFrameElement>document.createElement('iframe');
           this.iFrameItemplayer.setAttribute('srcdoc', myUnit.getItemplayerHtml());
           this.iFrameItemplayer.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin');
@@ -46,27 +56,20 @@ export class UnithostComponent implements OnInit, OnDestroy {
           this.iFrameItemplayer.setAttribute('height', String(this.iFrameHostElement.clientHeight));
 
           this.iFrameItemplayer.onload = () => {
+            const crtUnit = this.tss.currentUnit$.getValue();
+            if ((crtUnit !== null) && (this.iFrameItemplayer !== null)) {
             this.iFrameItemplayer.contentWindow.postMessage({
               messageType: 'ItemPlayerCommand',
               commandName: 'initialize',
               commandParameters: {
-                  itemSpecification: this.tss.currentUnit.dataForItemplayer,
+                  itemSpecification: crtUnit.dataForItemplayer,
                   itemResources: {
                       m005: ''
                   },
-                  restorePoint: this.tss.currentUnit.restorePoint
-                  }
-
-    /*          messageType: 'initItemplayer',
-              data: {
-                itemspec:
-                restorePoint:
-              }*/
-
-
-
+                  restorePoint: crtUnit.restorePoint
+                }
             }, '*');
-          };
+          }};
 
           this.iFrameHostElement.appendChild(this.iFrameItemplayer);
         }

@@ -4,10 +4,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { TestControllerRoutingModule } from './test-controller-routing.module';
-import { LoadingComponent } from './loading/loading.component';
 import { UnithostComponent } from './unithost/unithost.component';
 import { MatProgressSpinnerModule } from '@angular/material';
-import { StatusPageComponent } from './status-page/status-page.component';
 import { TestControllerComponent } from './test-controller.component';
 import { ResizeIFrameChildDirective } from './resize-IFrameChild/resize-IFrameChild.directive';
 
@@ -19,9 +17,7 @@ import { ResizeIFrameChildDirective } from './resize-IFrameChild/resize-IFrameCh
     MatProgressSpinnerModule
   ],
   declarations: [
-    LoadingComponent,
     UnithostComponent,
-    StatusPageComponent,
     TestControllerComponent,
     ResizeIFrameChildDirective
   ],

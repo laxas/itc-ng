@@ -24,11 +24,11 @@
       <mat-icon>home</mat-icon>
       <span>Anmeldeseite</span>
     </button>
-    <button mat-menu-item *ngIf="isSession" [routerLink]="['/start']">
+    <!--<button mat-menu-item *ngIf="isSession$ | async" [routerLink]="['/t']">
         <mat-icon>trending_up</mat-icon>
-        <span>Test-Startseite</span>
-      </button>
-      <button mat-menu-item *ngIf="isAdmin" [routerLink]="['/admin/myfiles']">
+        <span>Zum Test</span>
+      </button>-->
+    <button mat-menu-item *ngIf="isAdmin" [routerLink]="['/admin/myfiles']">
       <mat-icon>settings</mat-icon>
       <span>Testverwaltung</span>
     </button>

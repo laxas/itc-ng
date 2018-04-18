@@ -9,175 +9,176 @@ import { mergeMap } from 'rxjs/operators';
 
 @Injectable()
 export class TestdataService {
-  @Output() currentUnitChanged: EventEmitter<any> = new EventEmitter();
-  @Output() currentNavigationPointChanged: EventEmitter<any> = new EventEmitter();
-  @Output() problemArising: EventEmitter<any> = new EventEmitter();
-  @Output() sessionStatusChanged: EventEmitter<any> = new EventEmitter();
-
-  // title __________________________________________________
   public pageTitle$ = new BehaviorSubject<string>('Lade Seite...');
   public navPrevEnabled$ = new BehaviorSubject<boolean>(false);
   public navNextEnabled$ = new BehaviorSubject<boolean>(false);
+  public isSession$ = new BehaviorSubject<boolean>(false);
+  public statusmessage$ = new BehaviorSubject<string>('Bitte warten!');
+  public bookletname$ = new BehaviorSubject<string>('-');
 
-  private _sessionToken = '';
-  set sessionToken(newToken: string) {
-    if (newToken !== this._sessionToken) {
-      localStorage.setItem('st', newToken);
-      this._sessionToken = newToken;
-      this.sessionStatusChanged.emit(this.isSession);
-    }
-  }
+  public currentUnit$ = new BehaviorSubject<UnitDef>(null);
+  // public currentNavigationPoint$ = new BehaviorSubject<UnitDef>(null);
+
   get sessionToken(): string {
-    if (this._sessionToken.length === 0) {
-      this._sessionToken = localStorage.getItem('st');
-    }
     return this._sessionToken;
   }
-  get isSession(): boolean {
-    return this._sessionToken.length > 0;
-  }
 
 
-  private _currentUnit: UnitDef;
-  get currentUnit(): UnitDef {
-    return this._currentUnit;
-  }
-
-  private _currentNavigationPoint: NavigationPoint;
-  get currentNavigationPoint(): NavigationPoint {
-    return this._currentNavigationPoint;
-  }
-
-  get unitcount(): number {
-    return this.allUnits.length;
-  }
-
-  private _isProblem: boolean;
-  get isProblem(): boolean {
-    return this._isProblem;
-  }
-  set isProblem(p: boolean) {
-    this._isProblem = p;
-    if (p) {
-      this._problemMessage = 'Es ist ein Problem aufgetaucht.';
-      this.problemArising.emit(this._problemMessage);
-    } else {
-      this._problemMessage = '';
-    }
-  }
-
-  private _problemMessage: string;
-  get problemMessage(): string {
-    return this._problemMessage;
-  }
-  set problemMessage(msg: string) {
-    this._problemMessage = msg;
-    if (msg.length > 0) {
-      this._isProblem = true;
-      this.problemArising.emit(this._problemMessage);
-    } else {
-      this._isProblem = false;
-    }
-  }
+  // .................................................................................
+  private _sessionToken = '';
+  private allUnits: UnitDef[] = [];
 
 
-  // private private private private private private private private
-  private allUnits: UnitDef[];
-  private bookletname: string;
-  private unitCount: number;
-
+  // ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
   constructor(
     private bs: BackendService
   ) {
-    this._currentUnit = null;
-    this._currentNavigationPoint = null;
-    this.allUnits = [];
-    this.bookletname = '#booklet';
-    this.unitCount = 0;
+    this._sessionToken = localStorage.getItem('st');
+    if (this._sessionToken === null) {
+      this._sessionToken = '';
+    }
+    if (this._sessionToken === '') {
+      this.isSession$.next(false);
+    } else {
+      this.isSession$.next(true);
+    }
   }
 
-  updatePageTitle(newTitle) {
-    this.pageTitle$.next(newTitle);
-  }
-  updateNavPrevEnabled(newEnabled) {
-    this.navPrevEnabled$.next(newEnabled);
-  }
-  updateNavNextEnabled(newEnabled) {
-    this.navNextEnabled$.next(newEnabled);
-  }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
-  private setCurrentUnit(newUnitId: number) {
-    this.isProblem = false;
-    if (newUnitId < 0) {
-      this._currentUnit = null;
-    } else {
-      this._currentUnit = this.allUnits[newUnitId];
-      this.updateNavNextEnabled(newUnitId < this.unitcount - 1);
-      this.updateNavPrevEnabled(newUnitId > 0);
+  gotoUnit(target: any) {
+    const myUnit = this.currentUnit$.getValue();
+    let newUnit: UnitDef = null;
+    let myUnitId = 0;
+
+    if (this.allUnits.length > 0) {
+      if (myUnit !== null) {
+        myUnitId = myUnit.sequenceId;
+      }
+
+      if (typeof target === 'string') {
+        switch (target) {
+          case 'next':
+            if (myUnitId < this.allUnits.length - 1) {
+              myUnitId = myUnitId + 1;
+            }
+            break;
+
+          case 'prev':
+            if (myUnitId > 0) {
+              myUnitId = myUnitId - 1;
+            }
+            break;
+
+          case 'first':
+            myUnitId = 0;
+            break;
+
+          case 'last':
+            myUnitId = this.allUnits.length - 1;
+            break;
+
+          default:
+            myUnitId = -1;
+            break;
+        }
+      } else {
+        myUnitId = target;
+      }
+
+      if (myUnitId < 0) {
+        this.statusmessage$.next('Ungültiger Aufruf: ' + target);
+      } else {
+        // fetch resources
+        newUnit = this.allUnits[myUnitId];
+
+        this.pageTitle$.next(newUnit.title);
+        this.currentUnit$.next(null);
+
+        this.bs.getUnit(this._sessionToken, newUnit.name).subscribe(
+          (udata: GetXmlResponseData) => {
+            console.log('# # # # # # # # # # # # # # #');
+            console.log(udata);
+
+            newUnit.restorePoint = udata.status;
+
+            const oParser = new DOMParser();
+            const oDOM = oParser.parseFromString(udata.xml, 'text/xml');
+            if (oDOM.documentElement.nodeName === 'Unit') {
+              // ________________________
+              const dataElements = oDOM.documentElement.getElementsByTagName('Data');
+              if (dataElements.length > 0) {
+                const dataElement = dataElements[0];
+                newUnit.dataForItemplayer = dataElement.textContent;
+              }
+
+              // ________________________
+              const resourcesElements = oDOM.documentElement.getElementsByTagName('Resources');
+              if (resourcesElements.length > 0) {
+                let ResourceFetchPromises: Promise<number>[];
+                ResourceFetchPromises = [];
+
+                const resourcesElement = resourcesElements[0];
+                const rList = resourcesElement.getElementsByTagName('Resource');
+                for (let i = 0; i < rList.length; i++) {
+                  const myResource = new ResourceData(rList[i].textContent, rList[i].getAttribute('name'));
+                  myResource.type = rList[i].getAttribute('type');
+                  newUnit.resources.push(myResource);
+
+                  // add promise to load all resources at the end
+                  if (myResource.type === 'itemplayer_html') {
+                    ResourceFetchPromises.push(new Promise((resolve, reject) => {
+                      this.bs.getUnitResourceTxt(this._sessionToken, myResource.name).subscribe(
+                        (fileAsTxt: string) => {
+                          myResource.dataString = fileAsTxt;
+                          resolve(myResource.dataString.length);
+                        }
+                      );
+                    }));
+                  } else {
+                    ResourceFetchPromises.push(new Promise((resolve, reject) => {
+                      this.bs.getUnitResource64(this._sessionToken, myResource.name).subscribe(
+                        (fileAsBase64: string) => {
+                          myResource.dataString = fileAsBase64;
+                          resolve(myResource.dataString.length);
+                        }
+                      );
+                    }));
+                  }
+                }
+                Promise.all(ResourceFetchPromises)
+                  .then(promisesReturnValues => {
+                    this.currentUnit$.next(newUnit);
+                  });
+              } else {
+                this.currentUnit$.next(newUnit);
+              }
+            }
+          }
+        );
+      }
     }
-    this.currentUnitChanged.emit(this._currentUnit);
+
+    // - - - - - - - - - - - - - - - -
+    if (newUnit === null) {
+      this.pageTitle$.next('Aufgabe');
+      this.navNextEnabled$.next(false);
+      this.navPrevEnabled$.next(false);
+    } else {
+      this.pageTitle$.next(newUnit.title);
+      this.navNextEnabled$.next(myUnitId < this.allUnits.length - 1);
+      this.navPrevEnabled$.next(myUnitId > 0);
+    }
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
   public gotoPrevUnit() {
-    if (this.currentUnit !== null) {
-      const thisUnitNumber = this.currentUnit.sequenceId;
-      if (thisUnitNumber > 0) {
-        this.setCurrentUnit(thisUnitNumber - 1);
-      }
-    }
+    this.gotoUnit('prev');
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
   public gotoNextUnit() {
-    if (this.currentUnit !== null) {
-      const thisUnitNumber = this.currentUnit.sequenceId;
-      if (thisUnitNumber < this.unitcount - 1) {
-        this.setCurrentUnit(thisUnitNumber + 1);
-      }
-    }
-  }
-
-  // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
-  loadBookletDefinition() {
-    this.bs.getBooklet(this.sessionToken).subscribe(
-      (bdata: GetXmlResponseData) => {
-        // Create Unit-List
-        const oParser = new DOMParser();
-        const oDOM = oParser.parseFromString(bdata.xml, 'text/xml');
-        if (oDOM.documentElement.nodeName === 'Booklet') {
-          // ________________________
-          const metadataElements = oDOM.documentElement.getElementsByTagName('Metadata');
-          if (metadataElements.length > 0) {
-            const metadataElement = metadataElements[0];
-            const NameElement = metadataElement.getElementsByTagName('Name')[0];
-            this.bookletname = NameElement.textContent;
-          }
-
-          // ________________________
-          const unitsElements = oDOM.documentElement.getElementsByTagName('Units');
-          if (unitsElements.length > 0) {
-            const unitsElement = unitsElements[0];
-            const unitList = unitsElement.getElementsByTagName('Unit');
-            this.unitCount = unitList.length;
-            for (let i = 0; i < this.unitCount; i++) {
-              this.allUnits[i] = new UnitDef(unitList[i].getAttribute('name'), unitList[i].getAttribute('title'));
-              this.allUnits[i].sequenceId = i;
-            }
-
-            // triggers testcontroller to load unit
-            this.setCurrentUnit(0);
-          }
-        }
-      }, (err: ServerError) => {
-        this.problemMessage = err.label;
-        this._currentUnit = null;
-        this._currentNavigationPoint = null;
-        this.allUnits = [];
-        this.bookletname = '#booklet';
-      }
-    );
+    this.gotoUnit('next');
   }
 
   // /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -185,6 +186,25 @@ export class TestdataService {
   processMessagePost(postData) {
     console.log('TestdataService.processMessagePost');
     console.log(postData);
+  }
+
+
+  updateSessionToken(newToken: string) {
+    this._sessionToken = newToken;
+    if ((newToken !== null) && (newToken.length > 0)) {
+      localStorage.setItem('st', newToken);
+      this.isSession$.next(true);
+    } else {
+      localStorage.removeItem('st');
+      this.isSession$.next(false);
+    }
+  }
+
+  updateBookletData(bookletname: string, units: UnitDef[], message: string) {
+    this.allUnits = units;
+    this.bookletname$.next(bookletname);
+    this.statusmessage$.next(message);
+    this.gotoUnit('first');
   }
 }
 

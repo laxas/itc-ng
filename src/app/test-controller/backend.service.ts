@@ -7,24 +7,26 @@ import { catchError } from 'rxjs/operators';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/retry';
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/do';
 import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class BackendService {
 
   private serverUrl = 'http://ocba.iqb.hu-berlin.de/';
+  private unitCache: GetXmlResponseData[] = [];
 
   constructor(private http: HttpClient) { }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
-  getBooklet(sessiontoken: string): Observable<GetXmlResponseData | ServerError> {
+  getStatus(sessiontoken: string): Observable<GetXmlResponseData | ServerError> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type':  'application/json'
       })
     };
     return this.http
-      .post<GetXmlResponseData>(this.serverUrl + 'getBooklet.php', {st: sessiontoken}, httpOptions)
+      .post<GetXmlResponseData>(this.serverUrl + 'getStatusSession.php', {st: sessiontoken}, httpOptions)
         .pipe(
           catchError(this.handleError)
         );
@@ -37,11 +39,25 @@ export class BackendService {
         'Content-Type':  'application/json'
       })
     };
-    return this.http
+    console.log('###############');
+    console.log(this.unitCache);
+
+    const myUnitdata = this.unitCache[unitid];
+    if (typeof myUnitdata === 'undefined') {
+      return this.http
       .post<GetXmlResponseData>(this.serverUrl + 'getUnit.php', {st: sessiontoken, u: unitid}, httpOptions)
+        .do(r => {
+          this.unitCache[unitid] = r;
+        })
         .pipe(
           catchError(this.handleError)
         );
+    } else {
+      return new Observable((observer) => {
+        observer.next(myUnitdata);
+        observer.complete();
+      });
+    }
   }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
@@ -101,7 +117,7 @@ export class BackendService {
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   private handleError(errorObj: HttpErrorResponse): Observable<ServerError> {
-    let myreturn: ServerError = {
+    const myreturn: ServerError = {
       label: 'Fehler bei Datenübertragung',
       code: errorObj.status
     };

@@ -25,15 +25,13 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.gss.updatePageTitle('IQB-Testcenter - Willkommen!');
-    this.isSession = this.tss.isSession;
+    this.tss.isSession$.subscribe(is => {
+      this.isSession = is;
+    });
 
     this.testtakerloginform = this.fb.group({
       testname: this.fb.control('', [Validators.required, Validators.minLength(3)]),
       testpw: this.fb.control('', [Validators.required, Validators.minLength(3)])
-    });
-
-    this.tss.sessionStatusChanged.subscribe(newWS => {
-      this.isSession = this.tss.isSession;
     });
   }
 

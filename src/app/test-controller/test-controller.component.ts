@@ -1,4 +1,4 @@
-import { BackendService, GetXmlResponseData } from './backend.service';
+import { BackendService, GetXmlResponseData, ServerError } from './backend.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { TestdataService, UnitDef, ResourceData } from './testdata.service';
@@ -20,78 +20,48 @@ export class TestControllerComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.tss.currentUnitChanged.subscribe((newUnit: UnitDef) => {
-      if (newUnit == null) {
-        this.router.navigate(['p']);
-      } else {
-        this.tss.updatePageTitle(newUnit.name);
-        this.tss.isProblem = false;
-
-        this.bs.getUnit(this.tss.sessionToken, newUnit.name).subscribe(
-          (udata: GetXmlResponseData) => {
-            newUnit.restorePoint = udata.status;
-
-            const oParser = new DOMParser();
-            const oDOM = oParser.parseFromString(udata.xml, 'text/xml');
-            if (oDOM.documentElement.nodeName === 'Unit') {
-              // ________________________
-              const dataElements = oDOM.documentElement.getElementsByTagName('Data');
-              if (dataElements.length > 0) {
-                const dataElement = dataElements[0];
-                newUnit.dataForItemplayer = dataElement.textContent;
-              }
-
-              // ________________________
-              const resourcesElements = oDOM.documentElement.getElementsByTagName('Resources');
-              if (resourcesElements.length > 0) {
-                let ResourceFetchPromises: Promise<number>[];
-                ResourceFetchPromises = [];
-
-                const resourcesElement = resourcesElements[0];
-                const rList = resourcesElement.getElementsByTagName('Resource');
-                for (let i = 0; i < rList.length; i++) {
-                  const myResource = new ResourceData(rList[i].textContent, rList[i].getAttribute('name'));
-                  myResource.type = rList[i].getAttribute('type');
-                  newUnit.resources.push(myResource);
-
-                  // add promise to load all resources at the end
-                  if (myResource.type === 'itemplayer_html') {
-                    ResourceFetchPromises.push(new Promise((resolve, reject) => {
-                      this.bs.getUnitResourceTxt(this.tss.sessionToken, myResource.name).subscribe(
-                        (fileAsTxt: string) => {
-                          myResource.dataString = fileAsTxt;
-                          resolve(myResource.dataString.length);
-                        }
-                      );
-                    }));
-                  } else {
-                    ResourceFetchPromises.push(new Promise((resolve, reject) => {
-                      this.bs.getUnitResource64(this.tss.sessionToken, myResource.name).subscribe(
-                        (fileAsBase64: string) => {
-                          myResource.dataString = fileAsBase64;
-                          resolve(myResource.dataString.length);
-                        }
-                      );
-                    }));
-                  }
-                }
-                Promise.all(ResourceFetchPromises)
-                  .then(promisesReturnValues => {
-                    this.router.navigate(['u', newUnit.sequenceId], { relativeTo: this.route });
-                  });
-
-                } else {
-                  this.router.navigate(['u', newUnit.sequenceId], { relativeTo: this.route });
-              }
-            }
-          }
-        );
+    this.tss.currentUnit$.subscribe(myUnit => {
+      if (myUnit !== null) {
+        this.router.navigateByUrl('/t/u/' + myUnit.sequenceId);
       }
     });
 
-    // ################################################
-    // triggers currentUnitChanged so new Unithost will be loaded
-    this.tss.loadBookletDefinition();
-  }
+    this.tss.isSession$.subscribe(isSession => {
+      if (isSession) {
+        this.bs.getStatus(this.tss.sessionToken).subscribe(
+            (bdata: GetXmlResponseData) => {
+              let myBookletName = '';
 
+              // Create Unit-List
+              const myUnits: UnitDef[] = [];
+              const oParser = new DOMParser();
+              const oDOM = oParser.parseFromString(bdata.xml, 'text/xml');
+              if (oDOM.documentElement.nodeName === 'Booklet') {
+                // ________________________
+                const metadataElements = oDOM.documentElement.getElementsByTagName('Metadata');
+                if (metadataElements.length > 0) {
+                  const metadataElement = metadataElements[0];
+                  const NameElement = metadataElement.getElementsByTagName('Name')[0];
+                  myBookletName = NameElement.textContent;
+                }
+
+                // ________________________
+                const unitsElements = oDOM.documentElement.getElementsByTagName('Units');
+                if (unitsElements.length > 0) {
+                  const unitsElement = unitsElements[0];
+                  const unitList = unitsElement.getElementsByTagName('Unit');
+                  for (let i = 0; i < unitList.length; i++) {
+                    myUnits[i] = new UnitDef(unitList[i].getAttribute('name'), unitList[i].getAttribute('title'));
+                    myUnits[i].sequenceId = i;
+                  }
+                }
+              }
+              this.tss.updateBookletData(myBookletName, myUnits, 'Bitte warten');
+            }, (err: ServerError) => {
+              this.tss.updateBookletData('?', [], err.label);
+            }
+        );
+      }
+    });
+  }
 }

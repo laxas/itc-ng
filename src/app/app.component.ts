@@ -27,10 +27,10 @@ import { FormGroup } from '@angular/forms';
 
 export class AppComponent implements OnInit {
   public title = '';
-  public navPrevEnabled = true;
-  public navNextEnabled = true;
+  public navPrevEnabled = false;
+  public navNextEnabled = false;
   public isAdmin = false;
-  public isSession = false;
+  public isSession$: Observable<Boolean> = null;
 
   constructor (
     private gss: GlobalStoreService,
@@ -41,26 +41,17 @@ export class AppComponent implements OnInit {
     public aboutDialog: MatDialog) {  }
 
   ngOnInit() {
+    this.isSession$ = this.tss.isSession$.asObservable();
+    this.tss.navNextEnabled$.subscribe(is => this.navNextEnabled = is);
+    this.tss.navPrevEnabled$.subscribe(is => this.navPrevEnabled = is);
+    this.ass.isAdmin$.subscribe(is => this.isAdmin = is);
+
     merge(
       this.gss.pageTitle$,
       this.tss.pageTitle$,
       this.ass.pageTitle$).subscribe(t => {
         this.title = t;
       });
-
-    this.tss.navNextEnabled$.subscribe(e => {
-      this.navNextEnabled = e;
-    });
-    this.tss.navPrevEnabled$.subscribe(e => {
-      this.navPrevEnabled = e;
-    });
-    this.ass.isAdmin$.subscribe(i => {
-      this.isAdmin = i;
-    });
-
-    this.tss.sessionStatusChanged.subscribe(newWS => {
-      this.isSession = this.tss.isSession;
-    });
 
     window.addEventListener('message', (event) => {
       this.tss.processMessagePost(event);
@@ -72,8 +63,8 @@ export class AppComponent implements OnInit {
     const dialogRef = this.aboutDialog.open(AboutDialogComponent, {
       width: '500px',
       data: {
-        status: this.isAdmin ? ('angemeldet als ' + this.ass.loginName$.getValue()) : 'nicht angemeldet',
-        workspace: this.isAdmin ? this.ass.myWorkspaceName : '-'
+        status: this.ass.isAdmin$.getValue() ? ('angemeldet als ' + this.ass.loginName$.getValue()) : 'nicht angemeldet',
+        workspace: this.ass.isAdmin$.getValue() ? this.ass.myWorkspaceName : '-'
       }
     });
   }

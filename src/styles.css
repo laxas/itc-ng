@@ -58,3 +58,9 @@ iframe.unitHost {
   width: 100%;
   border: none;
 }
+
+p.unitMessage {
+  margin: 50px;
+  text-align: center;
+}
+
