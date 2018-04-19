@@ -1,3 +1,4 @@
+import { UnitActivateGuard, UnitDeactivateGuard, UnitResolver } from './unithost/unit-routing';
 import { UnithostComponent } from './unithost/unithost.component';
 import { TestControllerComponent } from './test-controller.component';
 import { NgModule } from '@angular/core';
@@ -12,7 +13,14 @@ const routes: Routes = [
     children: [
       {path: '', redirectTo: 'u/msg', pathMatch: 'full'},
       {path: 'u', redirectTo: 'u/msg', pathMatch: 'full'},
-      {path: 'u/:u', component: UnithostComponent}
+      {path: 'u/:u',
+        component: UnithostComponent,
+        // canActivate: [UnitActivateGuard],
+        // canDeactivate: [UnitDeactivateGuard],
+        resolve: {
+          unit: UnitResolver
+        }
+      }
     ]
   }];
 

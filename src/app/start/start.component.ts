@@ -145,8 +145,8 @@ export class StartComponent implements OnInit {
     this.bs.startSession(this.gss.loginToken, this.code, myElement.value).subscribe(
       (sessiontoken: string) => {
         this.tss.updateSessionToken(sessiontoken);
-        this.router.navigateByUrl('/t');
       }, (errormsg: string) => {
+        this.tss.updateSessionToken('');
         this.isError = true;
         this.errorMessage = errormsg;
       }

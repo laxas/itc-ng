@@ -7,6 +7,7 @@ import { catchError } from 'rxjs/operators';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/retry';
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/observable/throw';
 
@@ -39,9 +40,6 @@ export class BackendService {
         'Content-Type':  'application/json'
       })
     };
-    console.log('###############');
-    console.log(this.unitCache);
-
     const myUnitdata = this.unitCache[unitid];
     if (typeof myUnitdata === 'undefined') {
       return this.http

@@ -8,6 +8,7 @@ import { UnithostComponent } from './unithost/unithost.component';
 import { MatProgressSpinnerModule } from '@angular/material';
 import { TestControllerComponent } from './test-controller.component';
 import { ResizeIFrameChildDirective } from './resize-IFrameChild/resize-IFrameChild.directive';
+import { routingProviders } from './unithost/unit-routing';
 
 
 @NgModule({
@@ -23,7 +24,8 @@ import { ResizeIFrameChildDirective } from './resize-IFrameChild/resize-IFrameCh
   ],
   providers: [
     TestdataService,
-    BackendService
+    BackendService,
+    routingProviders
   ],
   exports: [
     TestControllerComponent

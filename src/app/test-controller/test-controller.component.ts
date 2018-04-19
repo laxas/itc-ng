@@ -20,12 +20,6 @@ export class TestControllerComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.tss.currentUnit$.subscribe(myUnit => {
-      if (myUnit !== null) {
-        this.router.navigateByUrl('/t/u/' + myUnit.sequenceId);
-      }
-    });
-
     this.tss.isSession$.subscribe(isSession => {
       if (isSession) {
         this.bs.getStatus(this.tss.sessionToken).subscribe(
@@ -61,6 +55,8 @@ export class TestControllerComponent implements OnInit {
               this.tss.updateBookletData('?', [], err.label);
             }
         );
+      } else {
+        this.tss.updateBookletData('?', [], '');
       }
     });
   }
