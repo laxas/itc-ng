@@ -9,10 +9,11 @@ import { Routes, RouterModule } from '@angular/router';
 const routes: Routes = [
   {
     path: 't',
+    runGuardsAndResolvers: 'always',
     component: TestControllerComponent,
     children: [
-      {path: '', redirectTo: 'u/msg', pathMatch: 'full'},
-      {path: 'u', redirectTo: 'u/msg', pathMatch: 'full'},
+//      {path: '', redirectTo: 'u/0', pathMatch: 'full'},
+//      {path: 'u', redirectTo: 'u/0', pathMatch: 'full'},
       {path: 'u/:u',
         component: UnithostComponent,
         // canActivate: [UnitActivateGuard],

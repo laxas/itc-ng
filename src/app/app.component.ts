@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
   public navPrevEnabled = false;
   public navNextEnabled = false;
   public isAdmin = false;
-  public isSession$: Observable<Boolean> = null;
+  public isSession = false;
 
   constructor (
     private gss: GlobalStoreService,
@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
     public aboutDialog: MatDialog) {  }
 
   ngOnInit() {
-    this.isSession$ = this.tss.isSession$.asObservable();
+    this.tss.isSession$.subscribe(is => this.isSession = is);
     this.tss.navNextEnabled$.subscribe(is => this.navNextEnabled = is);
     this.tss.navPrevEnabled$.subscribe(is => this.navPrevEnabled = is);
     this.ass.isAdmin$.subscribe(is => this.isAdmin = is);

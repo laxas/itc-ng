@@ -27,6 +27,8 @@ export class MyfilesComponent implements OnInit {
 
   // for iqb-FileUpload
   private isAdmin = false;
+  public token = '';
+  public workspace = -1;
 
   @ViewChild(MatSort) sort: MatSort;
 
@@ -44,7 +46,9 @@ export class MyfilesComponent implements OnInit {
   ngOnInit() {
     this.ass.workspaceId$.subscribe(ws => {
       this.updateFileList();
+      this.workspace = ws;
     });
+    this.ass.adminToken$.subscribe(token => this.token = token);
   }
 
   // ***********************************************************************************
@@ -80,10 +84,10 @@ export class MyfilesComponent implements OnInit {
       });
 
       dialogRef.afterClosed().subscribe(result => {
-        if (result === true) {
+        if (result !== false) {
           // =========================================================
           this.dataLoading = true;
-          this.bs.deleteFiles(this.ass.adminToken, this.ass.workspaceId$.getValue(), filesToDelete).subscribe(
+          this.bs.deleteFiles(this.ass.adminToken$.getValue(), this.ass.workspaceId$.getValue(), filesToDelete).subscribe(
             (deletefilesresponse: string) => {
               if ((deletefilesresponse.length > 5) && (deletefilesresponse.substr(0, 2) === 'e:')) {
                 this.snackBar.open(deletefilesresponse.substr(2), 'Fehler', {duration: 1000});
@@ -119,7 +123,7 @@ export class MyfilesComponent implements OnInit {
         this.dataLoading = false;
       } else {
         this.dataLoading = true;
-        this.bs.getFiles(this.ass.adminToken, myWorkspaceId).subscribe(
+        this.bs.getFiles(this.ass.adminToken$.getValue(), myWorkspaceId).subscribe(
           (filedataresponse: GetFileResponseData[]) => {
             this.serverfiles = new MatTableDataSource(filedataresponse);
             this.serverfiles.sort = this.sort;

@@ -62,21 +62,8 @@ export class UnithostComponent implements OnInit, OnDestroy {
           this.iFrameItemplayer.setAttribute('class', 'unitHost');
           this.iFrameItemplayer.setAttribute('height', String(this.iFrameHostElement.clientHeight));
 
-          this.iFrameItemplayer.onload = () => {
-            const crtUnit = this.route.snapshot.data['unit'];
-            if ((crtUnit !== null) && (this.iFrameItemplayer !== null)) {
-            this.iFrameItemplayer.contentWindow.postMessage({
-              messageType: 'ItemPlayerCommand',
-              commandName: 'initialize',
-              commandParameters: {
-                  itemSpecification: crtUnit.dataForItemplayer,
-                  itemResources: {
-                      m005: ''
-                  },
-                  restorePoint: crtUnit.restorePoint
-                }
-            }, '*');
-          }};
+          this.tss.pendingItemDefinition$.next(newUnit.dataForItemplayer);
+          this.tss.pendingItemResources$.next(newUnit.getResourcesAsDictionary());
 
           this.iFrameHostElement.appendChild(this.iFrameItemplayer);
         }

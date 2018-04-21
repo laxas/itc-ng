@@ -4,10 +4,10 @@ import { ResponseContentType } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
 import { catchError } from 'rxjs/operators';
-import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/retry';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/observable/throw';
 
@@ -16,6 +16,7 @@ export class BackendService {
 
   private serverUrl = 'http://ocba.iqb.hu-berlin.de/';
   private unitCache: GetXmlResponseData[] = [];
+  private lastBookletState = '';
 
   constructor(private http: HttpClient) { }
 
@@ -31,6 +32,25 @@ export class BackendService {
         .pipe(
           catchError(this.handleError)
         );
+  }
+
+  // 888888888888888888888888888888888888888888888888888888888888888888
+  setBookletStatus(sessiontoken: string, state: {}): Observable<GetXmlResponseData | ServerError> {
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/json'
+      })
+    };
+    if ((sessiontoken + JSON.stringify(state)) === this.lastBookletState) {
+      return Observable.of(null);
+    } else {
+      this.lastBookletState = sessiontoken + JSON.stringify(state);
+      return this.http
+      .post<GetXmlResponseData>(this.serverUrl + 'setBookletStatus.php', {st: sessiontoken, state: state}, httpOptions)
+        .pipe(
+          catchError(this.handleError)
+        );
+    }
   }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
@@ -51,7 +71,7 @@ export class BackendService {
           catchError(this.handleError)
         );
     } else {
-      return new Observable((observer) => {
+      return new Observable (observer => {
         observer.next(myUnitdata);
         observer.complete();
       });
@@ -135,7 +155,7 @@ export class BackendService {
 
 export interface GetXmlResponseData {
   xml: string;
-  status: string;
+  status: {};
 }
 
 export interface ServerError {

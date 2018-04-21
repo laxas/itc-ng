@@ -16,10 +16,9 @@ export class StatusService {
   public workspaceId$ = new BehaviorSubject<number>(-1);
   public workspaceList$ = new BehaviorSubject<WorkspaceData[]>([]);
   public notLoggedInMessage$ = new BehaviorSubject<string>('');
+  public adminToken$ = new BehaviorSubject<string>('');
 
-  get adminToken(): string {
-    return this._adminToken;
-  }
+
   get myWorkspaceName(): string {
     const wsId = this.workspaceId$.getValue();
     const workspaceList = this.workspaceList$.getValue();
@@ -35,7 +34,6 @@ export class StatusService {
 
   // .................................................................................
   private _lastloginname = '';
-  private _adminToken = '';
 
   // ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
   constructor (
@@ -45,11 +43,11 @@ export class StatusService {
     private route: ActivatedRoute,
     private router: Router
   ) {
-    this._adminToken = localStorage.getItem('at');
-    if (this._adminToken === null) {
-      this._adminToken = '';
+    let myToken = localStorage.getItem('at');
+    if ((myToken === null) || (myToken === undefined)) {
+      myToken = '';
     } else {
-      this.bs.getStatus(this._adminToken).subscribe(
+      this.bs.getStatus(myToken).subscribe(
         (admindata: LoginStatusResponseData) => {
           this.updateAdminStatus(admindata.admintoken, admindata.name, admindata.workspaces, '');
         }, (err: ServerError) => {
@@ -73,13 +71,10 @@ export class StatusService {
         lastloginname: this._lastloginname
       }
     });
+
     dialogRef.afterClosed().subscribe(result => {
-      if (typeof result === 'undefined') {
-        console.log('undefined');
-      } else {
-        if (result === false) {
-          console.log('falssse');
-        } else {
+      if (typeof result !== 'undefined') {
+        if (result !== false) {
           this.bs.login((<FormGroup>result).get('name').value, (<FormGroup>result).get('pw').value).subscribe(
             (admindata: LoginStatusResponseData) => {
               this.updateAdminStatus(admindata.admintoken, admindata.name, admindata.workspaces, '');
@@ -109,8 +104,8 @@ export class StatusService {
       }
     });
     dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.bs.logout(this._adminToken).subscribe(
+      if (result !== false) {
+        this.bs.logout(this.adminToken$.getValue()).subscribe(
           logoutresponse => {
             this.updateAdminStatus('', '', [], '');
             this.route.url.map(segments => segments.join('')).subscribe(u => {
@@ -138,7 +133,7 @@ export class StatusService {
     if ((token === null) || (token.length === 0)) {
       this.isAdmin$.next(false);
       localStorage.removeItem('at');
-      this._adminToken = '';
+      this.adminToken$.next('');
       this.workspaceId$.next(-1);
       this.workspaceList$.next([]);
       this.loginName$.next('');
@@ -146,7 +141,7 @@ export class StatusService {
     } else {
       this.isAdmin$.next(true);
       localStorage.setItem('at', token);
-      this._adminToken = token;
+      this.adminToken$.next(token);
       this.workspaceList$.next(workspaces);
       this.loginName$.next(name);
       this.notLoggedInMessage$.next('');
