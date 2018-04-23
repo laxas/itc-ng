@@ -1,13 +1,12 @@
-import { switchMap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { ReactiveFormsModule } from '@angular/forms';
+// import { ReactiveFormsModule } from '@angular/forms';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Observable';
 import { BackendService, GetXmlResponseData, ServerError } from './backend.service';
 import { Injectable, Component, Input, Output, EventEmitter, Pipe } from '@angular/core';
 import { Element } from '@angular/compiler';
-import { mergeMap, observeOn } from 'rxjs/operators';
+import { mergeAll, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 @Injectable()
@@ -64,7 +63,11 @@ export class TestdataService {
   getUnitAt (unitId: any): Observable<UnitDef | ServerError> {
     const unitIdNumber = Number(unitId);
     if (Number.isNaN(unitId) || (unitId < 0)) {
-      return Observable.of(null);
+      console.log(unitId);
+      return new Observable(observer => {
+        observer.next(null);
+        observer.complete();
+      });
     } else {
       if (this.allUnits.length === 0) {
 
@@ -110,8 +113,16 @@ export class TestdataService {
     }
   }
 
+  // switchMap because current requests have to cancelled if new fetchUnitData-call arrives
   fetchUnitData (myUnit: UnitDef): Observable<UnitDef> {
-    return this.bs.getUnit(this.sessionToken, myUnit.name)
+    if (myUnit === null) {
+      return new Observable(observer => {
+        observer.next(null);
+        observer.complete();
+      });
+    } else {
+
+      return this.bs.getUnit(this.sessionToken, myUnit.name)
           .switchMap((udata: GetXmlResponseData) => {
             myUnit.restorePoint = udata.status;
 
@@ -168,15 +179,17 @@ export class TestdataService {
                       .subscribe();
                     return myUnit;
                   });
+
+
               } else {
-                this.bs.setBookletStatus(this.sessionToken, {u: myUnit.sequenceId})
-                  .subscribe();
-                  return myUnit;
+                return this.bs.setBookletStatus(this.sessionToken, {u: myUnit.sequenceId})
+                .map(d => myUnit);
               }
             } else {
               return null;
             }
           });
+        }
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
@@ -210,7 +223,7 @@ export class TestdataService {
           break;
       }
     } else {
-      myUnitId = -1;
+      myUnitId = 0;
     }
     return myUnitId;
   }
@@ -223,6 +236,11 @@ export class TestdataService {
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
   public gotoNextUnit() {
     this.gotoUnit(this.getUnitId('next'));
+  }
+
+  // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+  public gotoFirstUnit() {
+    this.gotoUnit(this.getUnitId('first'));
   }
 
   // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
@@ -298,7 +316,7 @@ export class TestdataService {
     this.statusmessage$.next(message);
 
     if ((status === null) || (status['u'] === undefined)) {
-      this.gotoUnit(this.getUnitId('first'));
+      this.gotoFirstUnit();
     } else {
       this.gotoUnit(status['u']);
     }

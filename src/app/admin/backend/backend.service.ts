@@ -10,7 +10,7 @@ import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class BackendService {
-  private serverUrl = 'http://ocba.iqb.hu-berlin.de/';
+  public serverUrl = 'http://ocba.iqb.hu-berlin.de/';
 
   constructor(private http: HttpClient) { }
 
@@ -60,6 +60,26 @@ export class BackendService {
         );
   }
 
+
+  // *******************************************************************
+  // Fehlerbehandlung beim Aufrufer
+  getFile(token: string, workspaceId: number, filetype: string, filename: string): Observable<GetFileResponseData[] | ServerError> {
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/json'
+      })
+    };
+    return this.http
+      .post<GetFileResponseData[]>(this.serverUrl + 'getFile.php', {
+            at: token,
+            ws: workspaceId,
+            ft: filetype,
+            fn: filename
+          }, httpOptions)
+        .pipe(
+          catchError(this.handleError)
+        );
+  }
 
   // *******************************************************************
   // Fehlerbehandlung beim Aufrufer

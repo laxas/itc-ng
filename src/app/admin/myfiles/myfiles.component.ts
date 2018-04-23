@@ -139,4 +139,13 @@ export class MyfilesComponent implements OnInit {
       this.dataLoading = false;
     }
   }
+
+  // ***********************************************************************************
+  getDownloadRef(element: GetFileResponseData): string {
+    return this.bs.serverUrl
+        + 'getFile.php?at=' + this.ass.adminToken$.getValue()
+        + '&ws=' + this.ass.workspaceId$.getValue()
+        + '&t=' + element.type
+        + '&fn=' + element.filename;
+  }
 }

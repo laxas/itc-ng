@@ -22,7 +22,7 @@
 
       <ng-container matColumnDef="filename">
         <mat-header-cell *matHeaderCellDef mat-sort-header class="namecell"> Name </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="namecell"> {{element.filename}} </mat-cell>
+        <mat-cell *matCellDef="let element" class="namecell"><a target="_blank" [href]="getDownloadRef(element)">{{element.filename}}</a> </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="filedatetime">
