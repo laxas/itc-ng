@@ -51,13 +51,13 @@ export class TestdataService {
       this.navNextEnabled$.next((myUnitId >= 0) && (myUnitId < this.allUnits.length - 1));
     });
 
-    this.isSession$.subscribe(isSession => {
+/*    this.isSession$.subscribe(isSession => {
       if (isSession) {
 
       } else {
         this.updateBookletData('?', [], '', '');
       }
-    });
+    }); */
   }
 
   getUnitAt (unitId: any): Observable<UnitDef | ServerError> {

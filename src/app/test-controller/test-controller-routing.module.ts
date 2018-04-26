@@ -9,7 +9,6 @@ import { Routes, RouterModule } from '@angular/router';
 const routes: Routes = [
   {
     path: 't',
-    runGuardsAndResolvers: 'always',
     component: TestControllerComponent,
     children: [
 //      {path: '', redirectTo: 'u/0', pathMatch: 'full'},

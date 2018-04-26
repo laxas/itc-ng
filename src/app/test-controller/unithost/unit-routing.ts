@@ -40,10 +40,14 @@ export class UnitResolver implements Resolve<UnitDef> {
 
   resolve(next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<UnitDef> {
+      if (this.tss.isSession$.getValue() === true) {
         return this.tss.getUnitAt(next.params['u'])
           .switchMap((newUnit: UnitDef) => {
           return this.tss.fetchUnitData(newUnit);
         });
+      } else {
+        return null;
+      }
     }
 }
 
