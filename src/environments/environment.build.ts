@@ -5,8 +5,8 @@
 
 export const environment = {
   production: false,
-  testcenterUrl: 'http://ocba.iqb.hu-berlin.de/',
+  testcenterUrl: '/',
   appName: 'IQB-Testcenter',
   appPublisher: 'IQB - Institut zur Qualitätsentwicklung im Bildungswesen',
-  appVersion: '0 (dev)'
+  appVersion: '0.2.4 - 4.5.2018'
 };

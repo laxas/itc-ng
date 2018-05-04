@@ -1,3 +1,4 @@
+import { environment } from './../environments/environment';
 import { merge } from 'rxjs/observable/merge';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
@@ -36,9 +37,10 @@ export class AppComponent implements OnInit {
     private gss: GlobalStoreService,
     private ass: StatusService,
     private tss: TestdataService,
+    private bsApp: BackendService,
     private router: Router,
     private bs: BackendService,
-    public aboutDialog: MatDialog) {  }
+    public aboutDialog: MatDialog) { }
 
   ngOnInit() {
     this.tss.isSession$.subscribe(is => this.isSession = is);

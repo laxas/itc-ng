@@ -1,23 +1,19 @@
 import { GlobalStoreService } from './../shared/global-store.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 
 @Component({
   selector: 'tc-about-dialog',
   templateUrl: './about-dialog.component.html',
   styleUrls: ['./about-dialog.component.css']
 })
-export class AboutDialogComponent implements OnInit {
-  public appName: String;
-  public appPublisher: String;
-  public appVersion: String;
+export class AboutDialogComponent {
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any, private gss: GlobalStoreService) { }
-
-  ngOnInit() {
-    this.appName = this.gss.appName;
-    this.appVersion = this.gss.appVersion;
-    this.appPublisher = this.gss.appPublisher;
-  }
+  constructor(
+    @Inject('APP_NAME') private appName: string,
+    @Inject('APP_PUBLISHER') private appPublisher: string,
+    @Inject('APP_VERSION') private appVersion: string,
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private gss: GlobalStoreService) { }
 
 }

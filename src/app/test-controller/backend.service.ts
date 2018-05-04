@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { ResponseContentType } from '@angular/http';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
 import { catchError } from 'rxjs/operators';
@@ -14,11 +15,12 @@ import 'rxjs/add/observable/throw';
 @Injectable()
 export class BackendService {
 
-  private serverUrl = 'http://ocba.iqb.hu-berlin.de/';
   private unitCache: GetXmlResponseData[] = [];
   private lastBookletState = '';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    @Inject('SERVER_URL') private serverUrl: string,
+    private http: HttpClient) { }
 
   // 888888888888888888888888888888888888888888888888888888888888888888
   getStatus(sessiontoken: string): Observable<GetXmlResponseData | ServerError> {

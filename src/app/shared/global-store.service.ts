@@ -6,10 +6,6 @@ export class GlobalStoreService {
 
   private _loginToken = '';
 
-  public readonly appName = 'IQB OpenCBA Testcenter';
-  public readonly appPublisher = 'IQB - Institut zur Qualitätsentwicklung im Bildungswesen';
-  public readonly appVersion = '0.2.3/12.4.2018';
-
   // title __________________________________________________
   public pageTitle$ = new BehaviorSubject('IQB-Testcenter - Willkommen');
   updatePageTitle(newTitle) {

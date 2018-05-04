@@ -18,7 +18,6 @@ export class StatusService {
   public notLoggedInMessage$ = new BehaviorSubject<string>('');
   public adminToken$ = new BehaviorSubject<string>('');
 
-
   get myWorkspaceName(): string {
     const wsId = this.workspaceId$.getValue();
     const workspaceList = this.workspaceList$.getValue();
@@ -61,7 +60,6 @@ export class StatusService {
     }
 
   }
-
 
   // *******************************************************************************************************
   login() {

@@ -21,7 +21,7 @@ import { IqbFileUploadQueueComponent, IqbFileUploadInputForDirective } from './.
 export class MyfilesComponent implements OnInit {
   public serverfiles: MatTableDataSource<GetFileResponseData>;
   public displayedColumns = ['checked', 'filename', 'typelabel', 'filesize', 'filedatetime'];
-  public uploadUrl = 'http://ocba.iqb.hu-berlin.de/uploadFile.php';
+  public uploadUrl = '/uploadFile.php';
   public fileNameAlias = 'fileforopencba';
   public dataLoading = false;
 
@@ -32,7 +32,9 @@ export class MyfilesComponent implements OnInit {
 
   @ViewChild(MatSort) sort: MatSort;
 
-  constructor(private bs: BackendService,
+  constructor(
+    @Inject('SERVER_URL') private serverUrl: string,
+    private bs: BackendService,
     private ass: StatusService,
     public confirmDialog: MatDialog,
     public messsageDialog: MatDialog,
@@ -41,6 +43,7 @@ export class MyfilesComponent implements OnInit {
     this.ass.isAdmin$.subscribe(i => {
       this.isAdmin = i;
     });
+    this.uploadUrl = this.serverUrl + 'uploadFile.php';
   }
 
   ngOnInit() {
@@ -142,7 +145,7 @@ export class MyfilesComponent implements OnInit {
 
   // ***********************************************************************************
   getDownloadRef(element: GetFileResponseData): string {
-    return this.bs.serverUrl
+    return this.serverUrl
         + 'getFile.php?at=' + this.ass.adminToken$.getValue()
         + '&ws=' + this.ass.workspaceId$.getValue()
         + '&t=' + element.type

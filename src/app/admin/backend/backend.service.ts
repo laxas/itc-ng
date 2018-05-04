@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
 import { catchError } from 'rxjs/operators';
 import 'rxjs/add/operator/map';
@@ -10,9 +11,10 @@ import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class BackendService {
-  public serverUrl = 'http://ocba.iqb.hu-berlin.de/';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    @Inject('SERVER_URL') private serverUrl: string,
+    private http: HttpClient) { }
 
   private errorHandler(error: Error | any): Observable<any> {
     return Observable.throw(error);

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
@@ -10,9 +10,10 @@ import 'rxjs/add/observable/throw';
 
 @Injectable()
 export class BackendService {
-  private serverUrl = 'http://ocba.iqb.hu-berlin.de/';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    @Inject('SERVER_URL') private serverUrl: string,
+    private http: HttpClient) { }
 
   getStatus(admintoken: string, logintoken: string, sessiontoken: string): Observable<LoginResponseData> {
     const httpOptions = {
@@ -28,7 +29,6 @@ export class BackendService {
   }
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
   testlogin(name: string, password: string): Observable<string> {
     const httpOptions = {
       headers: new HttpHeaders({
