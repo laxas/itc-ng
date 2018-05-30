@@ -5,7 +5,7 @@ import { UnithostComponent } from './unithost.component';
 import { Injectable, Component } from '@angular/core';
 import { CanActivate, CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot, Resolve } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/Observable/of';
+import 'rxjs/add/observable/of';
 
 // import 'rxjs/add/Observable/map';
 import { UnitDef, TestdataService } from '../testdata.service';
